@@ -109,7 +109,7 @@ class ChessBoardView @JvmOverloads constructor(
     var onSchemeTapListener: (() -> Unit)? = null
     var onPendingResetTapListener: (() -> Unit)? = null
     var onEnemyPieceTappedListener: (() -> Unit)? = null
-    var onIllegalMoveListener: (() -> Unit)? = null
+    var onIllegalMoveListener: ((targetPos: Position?) -> Unit)? = null
 
     // Drag-and-drop state
     var isDragging = false
@@ -602,7 +602,7 @@ class ChessBoardView @JvmOverloads constructor(
                             selectedPosition = null
                             validMovesForSelected = emptyList()
                             SoundEffects.playInvalid(context)
-                            onIllegalMoveListener?.invoke()
+                            onIllegalMoveListener?.invoke(pos)
                             invalidate()
                             return true
                         }
@@ -627,7 +627,7 @@ class ChessBoardView @JvmOverloads constructor(
                                 onEnemyPieceTappedListener?.invoke()
                             } else {
                                 SoundEffects.playInvalid(context)
-                                onIllegalMoveListener?.invoke()
+                                onIllegalMoveListener?.invoke(pos)
                             }
                         }
                     }
@@ -670,7 +670,7 @@ class ChessBoardView @JvmOverloads constructor(
                             selectedPosition = null
                             validMovesForSelected = emptyList()
                             SoundEffects.playInvalid(context)
-                            onIllegalMoveListener?.invoke()
+                            onIllegalMoveListener?.invoke(dropPos)
                             invalidate()
                             return true
                         }

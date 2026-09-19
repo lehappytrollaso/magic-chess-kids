@@ -641,35 +641,74 @@ class ChessGame {
     }
 
     fun checkPawnWarsWinner(): PieceColor? {
-        // First pawn to reach opposite back rank wins
+        // First pawn to reach opposite back rank wins (promoted to Queen or Pawn)
         for (c in 0..7) {
             val p0 = board[0][c]
-            if (p0 != null && p0.color == PieceColor.WHITE && p0.type == PieceType.PAWN) return PieceColor.WHITE
+            if (p0 != null && p0.color == PieceColor.WHITE) return PieceColor.WHITE
             val p7 = board[7][c]
-            if (p7 != null && p7.color == PieceColor.BLACK && p7.type == PieceType.PAWN) return PieceColor.BLACK
+            if (p7 != null && p7.color == PieceColor.BLACK) return PieceColor.BLACK
         }
         var whitePawns = 0
         var blackPawns = 0
         for (r in 0..7) {
             for (c in 0..7) {
                 val p = board[r][c] ?: continue
-                if (p.type == PieceType.PAWN) {
-                    if (p.color == PieceColor.WHITE) whitePawns++
-                    else blackPawns++
-                }
+                if (p.color == PieceColor.WHITE) whitePawns++
+                else blackPawns++
             }
         }
         if (whitePawns == 0 && blackPawns > 0) return PieceColor.BLACK
         if (blackPawns == 0 && whitePawns > 0) return PieceColor.WHITE
 
-        // If no legal moves remain for active player
-        val currentMoves = getAllLegalMoves(turn)
-        if (currentMoves.isEmpty()) {
+        val whiteMoves = getAllLegalMoves(PieceColor.WHITE)
+        val blackMoves = getAllLegalMoves(PieceColor.BLACK)
+
+        // Both players are blocked with no legal moves: compare pawn counts
+        if (whiteMoves.isEmpty() && blackMoves.isEmpty()) {
             return if (whitePawns > blackPawns) PieceColor.WHITE
             else if (blackPawns > whitePawns) PieceColor.BLACK
-            else PieceColor.WHITE
+            else PieceColor.WHITE // Friendly draw resolution for child
         }
         return null
+    }
+
+    fun getHungryKnightHint(stars: Set<Position>, lava: Set<Position>): Move? {
+        val knightPos = (0..7).flatMap { r -> (0..7).map { c -> Position(r, c) } }
+            .firstOrNull { pos ->
+                val p = board[pos.row][pos.col]
+                p != null && p.type == PieceType.KNIGHT && p.color == PieceColor.WHITE
+            } ?: return null
+
+        if (stars.isEmpty()) return null
+
+        // BFS to find shortest path from knightPos to any star avoiding lava
+        val queue = ArrayDeque<Pair<Position, Position>>() // (currentPos, firstStep)
+        val visited = mutableSetOf<Position>()
+        visited.add(knightPos)
+
+        val legalMoves = getLegalMoves(knightPos).filter { !lava.contains(it.to) }
+        for (m in legalMoves) {
+            if (stars.contains(m.to)) {
+                return m
+            }
+            queue.add(Pair(m.to, m.to))
+            visited.add(m.to)
+        }
+
+        while (queue.isNotEmpty()) {
+            val (curr, firstStep) = queue.removeFirst()
+            val nextLegal = getLegalMoves(curr).filter { !lava.contains(it.to) }
+            for (m in nextLegal) {
+                if (stars.contains(m.to)) {
+                    return Move(knightPos, firstStep)
+                }
+                if (!visited.contains(m.to)) {
+                    visited.add(m.to)
+                    queue.add(Pair(m.to, firstStep))
+                }
+            }
+        }
+        return legalMoves.firstOrNull()
     }
 
     // --- Minigame 2: The Hungry Knight ---

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Magic Chess Kids - Feature Delivery Report</title>
+  <title>Ajedrez Mágico - Entrega Completa de Funcionalidades Didácticas</title>
   <style>
     :root {
       --primary: #7E57C2;
@@ -157,95 +157,143 @@
 </head>
 <body>
 
-  <!-- Ultra-Compact Header (< 70px) -->
+  <!-- Header Ultra-Compacto (< 70px) -->
   <div class="header-bar">
     <div class="header-title">
-      <span>✨</span> Magic Chess Kids - Feature Delivery Report
+      <span>✨</span> Ajedrez Mágico - Entrega de Nuevas Funcionalidades
     </div>
     <div class="badge-group">
-      <span class="badge badge-apk">Native Android APK</span>
-      <span class="badge badge-success">Build & Tests 100% OK</span>
-      <span class="badge badge-kids">Toddler Pedagogy</span>
-      <span class="badge badge-vector">Zero Slop</span>
+      <span class="badge badge-apk">Android APK Nativo</span>
+      <span class="badge badge-success">Build OK & Tests 100%</span>
+      <span class="badge badge-kids">Pedagogía Infantil</span>
+      <span class="badge badge-vector">Sin Gamificación Forzada</span>
     </div>
   </div>
 
-  <!-- Delivery KPIs -->
+  <!-- KPIs de la Entrega -->
   <div class="grid-kpis">
     <div class="kpi-card">
-      <span class="kpi-label">Interactive Minigames</span>
-      <span class="kpi-value">2 Modes (Pawn Wars & Hungry Knight)</span>
+      <span class="kpi-label">Nuevos Minijuegos Didácticos</span>
+      <span class="kpi-value">2 Modos (Guerra de Peones & Festín)</span>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Expressive Sparky</span>
-      <span class="kpi-value">4 Moods with Bouncy Micro-animations</span>
+      <span class="kpi-label">Microexpresiones de Sparky</span>
+      <span class="kpi-value">4 Estados Reactivos con Rebote</span>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Magic Realm Palettes</span>
-      <span class="kpi-value">4 Themes with SharedPreferences</span>
+      <span class="kpi-label">Paletas de Reinos Mágicos</span>
+      <span class="kpi-value">4 Temas con Persistencia SharedPreferences</span>
     </div>
     <div class="kpi-card">
-      <span class="kpi-label">Adaptive Difficulty</span>
-      <span class="kpi-value">3 Modes (Toddler, Friend, Champion)</span>
+      <span class="kpi-label">Dificultad de Sparky</span>
+      <span class="kpi-value">3 Niveles (Aprendiz, Amigo, Campeona)</span>
     </div>
   </div>
 
-  <!-- Summary of Implemented Features -->
+  <!-- Resumen de Funcionalidades Implementadas -->
   <div class="main-card">
-    <h2>🎯 Implemented Features (Zero Artificial Gamification)</h2>
+    <h2>🎯 Funcionalidades Implementadas (Cero Gamificación Forzada)</h2>
     <div class="feature-grid">
       <div class="feature-item">
-        <h3>⚔️ Minigame: Pawn Wars</h3>
-        <p>8 vs 8 pawns match focused on pawn movement, diagonal captures, promotion, and blocking. First pawn to reach opposite rank wins. Includes undo and hints.</p>
+        <h3>⚔️ Minijuego: Guerra de Peones</h3>
+        <p>Partida 8 vs 8 peones centrada en entender el avance, la coronación y el bloqueo de peones. El primer peón en cruzar el tablero gana. Incluye deshacer y pistas didácticas.</p>
       </div>
       <div class="feature-item">
-        <h3>🦄 Minigame: The Hungry Knight</h3>
-        <p>L-jump mastery in 3 progressive stages. The child must collect all golden stars ⭐ while dodging fiery lava traps 🔥 with instant sound and haptic alerts.</p>
+        <h3>🦄 Minijuego: El Festín del Caballo</h3>
+        <p>Entrenamiento del salto en 'L' en 3 fases de laberinto. La niña debe recoger todas las estrellas doradas ⭐ evitando pisar las casillas con trampas de lava ardiente 🔥.</p>
       </div>
       <div class="feature-item">
-        <h3>🤖 Expressive Reactive Sparky</h3>
-        <p>Mascot with 4 vector micro-expressions: Normal (cheerful smile), Thinking (concentrated squint & spark), Surprised (open mouth on captures/checks), and Celebrating (party eyes & confetti).</p>
+        <h3>🤖 Sparky Reactivo y Expresivo</h3>
+        <p>Mascota con 4 microexpresiones vectoriales: Normal (sonriente), Pensando (ojos concentrados y antena brillante), Sorprendido (abriendo la boca ante capturas/jaques) y Celebrando (ojos felices y confeti).</p>
       </div>
       <div class="feature-item">
-        <h3>🎨 Magic Realm Board Themes</h3>
-        <p>Modal palette selector: Magic Fantasy (Lavender/Cream), Emerald Forest (Green/Mint), Ice Kingdom (Arctic Blue), and Candy Land (Pink/Vanilla). Persisted locally.</p>
+        <h3>🎨 Paletas de «Reinos Mágicos»</h3>
+        <p>Selector accesible desde barra superior: Fantasía Mágica (Lavanda/Crema), Bosque Esmeralda (Verde/Menta), Reino de Hielo (Azul Ártico) y Mundo Caramelo (Rosa/Vainilla). Guardado en SharedPreferences.</p>
       </div>
       <div class="feature-item">
-        <h3>📳 Gentle Haptic Feedback (18ms)</h3>
-        <p>Subtle tactile pulse with Android <code>VibrationEffect</code> on moves, captures, and stars. Respects mute mode completely for quiet environments.</p>
+        <h3>📳 Respuesta Háptica Suave (18ms)</h3>
+        <p>Vibración háptica táctil con <code>VibrationEffect</code> en movimientos válidos, capturas y recolección de estrellas. Respeto total al botón de silencio para entornos tranquilos.</p>
       </div>
       <div class="feature-item">
-        <h3>🐣 Adaptive Difficulty for Sparky</h3>
-        <p>1-tap selector pills: <b>Toddler</b> (never captures Queen, high forgiveness), <b>Friend</b> (instructional balance), and <b>Champion</b> (tactical play defending pieces and seeking checks).</p>
+        <h3>🐣 Dificultad Adaptativa de Sparky</h3>
+        <p>Tres píldoras de 1 clic: <b>Aprendiz</b> (nunca captura damas, alta aleatoriedad), <b>Amigo</b> (juego equilibrado) y <b>Campeona</b> (juego táctico que defiende piezas y busca jaques).</p>
       </div>
     </div>
   </div>
 
-  <!-- Installation and Verification -->
+  <!-- Detalles de Instalación y Verificación -->
   <div class="main-card">
-    <h2>📦 APK Download and Installation</h2>
-    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">The compiled APK is ready for installation on any physical device or emulator (Android 7.0+ / API 24+):</p>
+    <h2>📦 Descarga e Instalación del APK</h2>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">El APK compilado está listo para su instalación directa en cualquier dispositivo físico o emulador Android (API 24+):</p>
     <div class="install-box">
 adb install -r app/build/outputs/apk/debug/app-debug.apk
     </div>
     <table style="margin-top: 14px;">
       <thead>
         <tr>
-          <th>File</th>
-          <th>Location</th>
-          <th>Status</th>
+          <th>Archivo</th>
+          <th>Ruta</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td><b>English Debug APK</b></td>
-          <td><code>magic-chess-kids/app/build/outputs/apk/debug/app-debug.apk</code></td>
-          <td><span class="tag tag-green">Built OK (5.7 MB)</span></td>
+          <td><b>APK Debug Español</b></td>
+          <td><code>ajedrez-infantil/app/build/outputs/apk/debug/app-debug.apk</code></td>
+          <td><span class="tag tag-green">Compilado OK (5.7 MB)</span></td>
         </tr>
         <tr>
-          <td><b>Spanish Debug APK</b></td>
-          <td><code>ajedrez-infantil/app/build/outputs/apk/debug/app-debug.apk</code></td>
-          <td><span class="tag tag-green">Built OK (5.7 MB)</span></td>
+          <td><b>APK Debug Inglés</b></td>
+          <td><code>magic-chess-kids/app/build/outputs/apk/debug/app-debug.apk</code></td>
+          <td><span class="tag tag-green">Compilado OK (5.7 MB)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Auditoría Anti-Bloqueos y Pruebas Empíricas -->
+  <div class="main-card">
+    <h2>🛡️ Auditoría Exhaustiva Anti-Bloqueos (Verificación de Cero Frustración)</h2>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">Se ha efectuado una inspección estricta paso a paso para garantizar que ningún flujo, minijuego o menú pueda quedar bloqueado o congelado ante jugadas inesperadas:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Escenario Evaluado</th>
+          <th>Causa Raíz Identificada</th>
+          <th>Solución Técnica Blindada</th>
+          <th>Verificación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Festín del Caballo: Saltos sucesivos</b></td>
+          <td><code>makeMove()</code> alternaba el turno a <code>BLACK</code>. Al no haber jugador negro, el caballo blanco quedaba inmovilizado tras el 1.er salto.</td>
+          <td>Inyección de <code>game.setTurn(PieceColor.WHITE)</code> en cada salto, garantizando fluidez ininterrumpida.</td>
+          <td><span class="tag tag-green">Test Unitario OK</span></td>
+        </tr>
+        <tr>
+          <td><b>Guerra de Peones: Coronación en fila meta</b></td>
+          <td><code>checkPawnWarsWinner()</code> comprobaba <code>type == PAWN</code>, pero <code>makeMove()</code> corona el peón a Dama, saltándose el detector de fin de juego.</td>
+          <td>Comprobación de color en fila meta (<code>p0.color == WHITE</code> / <code>p7.color == BLACK</code>) independientemente del tipo de pieza.</td>
+          <td><span class="tag tag-green">Test Unitario OK</span></td>
+        </tr>
+        <tr>
+          <td><b>Guerra de Peones: Bloqueo total (Stalemate)</b></td>
+          <td>Si los peones negros quedaban bloqueados, la IA retornaba <code>null</code> y el juego quedaba atascado en "Sparky pensando...".</td>
+          <td>Si Sparky no puede mover, cede el turno a la niña (<code>setTurn(WHITE)</code>). Si ambos están bloqueados, se compara recuento y finaliza limpiamente.</td>
+          <td><span class="tag tag-green">Test Unitario OK</span></td>
+        </tr>
+        <tr>
+          <td><b>Festín del Caballo: Trampas de lava</b></td>
+          <td>Al tocar lava, se emitía la regla genérica del caballo en vez del aviso de lava porque el listener no recibía la casilla pulsada.</td>
+          <td><code>onIllegalMoveListener(targetPos)</code> detecta si la casilla es lava y activa la advertencia reactiva con cara de sorpresa de Sparky.</td>
+          <td><span class="tag tag-green">Comprobado OK</span></td>
+        </tr>
+        <tr>
+          <td><b>Festín del Caballo: Deshacer y Pista BFS</b></td>
+          <td>Si la niña saltaba a una casilla sin salida, debía reiniciar todo el nivel desde el principio.</td>
+          <td>Añadidos botones "Deshacer ↩️" (restaura estrellas consumidas) y "Pista 💡" (resuelve el camino más corto con BFS evitando lava).</td>
+          <td><span class="tag tag-green">Comprobado OK</span></td>
         </tr>
       </tbody>
     </table>

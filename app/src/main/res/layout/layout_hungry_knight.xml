@@ -119,6 +119,78 @@
             android:layout_gravity="center" />
     </FrameLayout>
 
+    <!-- Bottom Toolbar (Hint & Undo) -->
+    <LinearLayout
+        android:id="@+id/containerHungryKnightTools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:id="@+id/btnHungryKnightHint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="50dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_button_gold"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:layout_marginEnd="6dp"
+            android:elevation="3dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_hint"
+                android:contentDescription="Hint" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Hint 💡"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/btnHungryKnightUndo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="50dp"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_button_primary"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:layout_marginStart="6dp"
+            android:elevation="3dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_undo"
+                android:contentDescription="Undo" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Undo ↩️"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
     <!-- Bottom Action Button -->
     <Button
         android:id="@+id/btnHungryKnightAction"

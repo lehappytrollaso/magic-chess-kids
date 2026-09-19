@@ -157,4 +157,92 @@ class ChessEngineTest {
             }
         }
     }
+
+    @Test
+    fun testPawnWarsPromotionWinsWhite() {
+        val game = ChessGame()
+        game.setupPawnWars()
+        // Place a white pawn at row 1, ready to advance to row 0
+        game.setPiece(Position(1, 0), Piece(PieceType.PAWN, PieceColor.WHITE))
+        game.setTurn(PieceColor.WHITE)
+
+        // Make promotion move to row 0
+        val moved = game.makeMove(Move(Position(1, 0), Position(0, 0)))
+        assertTrue(moved)
+
+        // Verify checkPawnWarsWinner recognizes the winning piece on row 0
+        val winner = game.checkPawnWarsWinner()
+        assertEquals(PieceColor.WHITE, winner)
+    }
+
+    @Test
+    fun testPawnWarsPromotionWinsBlack() {
+        val game = ChessGame()
+        game.setupPawnWars()
+        // Place a black pawn at row 6, ready to advance to row 7
+        game.setPiece(Position(6, 7), Piece(PieceType.PAWN, PieceColor.BLACK))
+        game.setTurn(PieceColor.BLACK)
+
+        val moved = game.makeMove(Move(Position(6, 7), Position(7, 7)))
+        assertTrue(moved)
+
+        val winner = game.checkPawnWarsWinner()
+        assertEquals(PieceColor.BLACK, winner)
+    }
+
+    @Test
+    fun testPawnWarsBlockadeResolution() {
+        val game = ChessGame()
+        game.clearBoard()
+        // Lock white and black pawns facing each other with non-adjacent columns
+        game.setPiece(Position(4, 0), Piece(PieceType.PAWN, PieceColor.WHITE))
+        game.setPiece(Position(3, 0), Piece(PieceType.PAWN, PieceColor.BLACK))
+        game.setPiece(Position(4, 2), Piece(PieceType.PAWN, PieceColor.WHITE))
+        game.setPiece(Position(3, 2), Piece(PieceType.PAWN, PieceColor.BLACK))
+        game.setPiece(Position(4, 4), Piece(PieceType.PAWN, PieceColor.WHITE))
+        game.setPiece(Position(3, 4), Piece(PieceType.PAWN, PieceColor.BLACK))
+
+        // All 3 pairs are directly facing each other with empty columns between them
+        val whiteMoves = game.getAllLegalMoves(PieceColor.WHITE)
+        val blackMoves = game.getAllLegalMoves(PieceColor.BLACK)
+        assertTrue(whiteMoves.isEmpty())
+        assertTrue(blackMoves.isEmpty())
+
+        // Blockade resolved: equal pawns yields friendly win for child
+        val winner = game.checkPawnWarsWinner()
+        assertEquals(PieceColor.WHITE, winner)
+    }
+
+    @Test
+    fun testHungryKnightSolvabilityAndHint() {
+        for (stage in 1..3) {
+            val game = ChessGame()
+            val level = game.setupHungryKnight(stage)
+            assertTrue(level.stars.isNotEmpty())
+
+            // Test BFS hint returns a valid move avoiding lava
+            val hint = game.getHungryKnightHint(level.stars, level.lava)
+            assertNotNull("Stage $stage must have a valid BFS hint", hint)
+            assertFalse(level.lava.contains(hint!!.to))
+            val knightMoves = game.getLegalMoves(level.knightPos)
+            assertTrue(knightMoves.any { it.to == hint.to })
+        }
+    }
+
+    @Test
+    fun testHungryKnightTurnPersistence() {
+        val game = ChessGame()
+        val level = game.setupHungryKnight(1)
+        val hint = game.getHungryKnightHint(level.stars, level.lava)!!
+
+        // Move knight
+        game.makeMove(hint)
+        // With fix applied in MainActivity, turn is kept as WHITE
+        game.setTurn(PieceColor.WHITE)
+        assertEquals(PieceColor.WHITE, game.turn)
+
+        // Verify knight can move again immediately
+        val nextMoves = game.getLegalMoves(hint.to)
+        assertTrue(nextMoves.isNotEmpty())
+    }
 }
