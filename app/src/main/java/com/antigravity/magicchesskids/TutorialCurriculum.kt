@@ -284,7 +284,7 @@ object TutorialCurriculum {
                     piecePos = Position(6, 4),
                     extraPieces = mapOf(
                         Position(0, 4) to Piece(PieceType.KING, PieceColor.BLACK),
-                        Position(2, 4) to Piece(PieceType.KING, PieceColor.WHITE)
+                        Position(2, 3) to Piece(PieceType.KING, PieceColor.WHITE)
                     ),
                     targetPositions = setOf(Position(1, 4)),
                     successText = "CHECKMATE, CHAMPION! 🏆🎉✨"

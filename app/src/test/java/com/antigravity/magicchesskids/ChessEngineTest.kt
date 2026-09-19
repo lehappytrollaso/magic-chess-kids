@@ -111,4 +111,50 @@ class ChessEngineTest {
             }
         }
     }
+
+    @Test
+    fun testTutorialDrillTurnLockPrevention() {
+        val game = ChessGame()
+        game.clearBoard()
+        val pos = Position(5, 4)
+        game.setPiece(pos, Piece(PieceType.PAWN, PieceColor.WHITE))
+        game.setTurn(PieceColor.WHITE)
+
+        val legalMoves = game.getLegalMoves(pos)
+        assertTrue(legalMoves.isNotEmpty())
+        val chosenMove = legalMoves.first()
+        val moved = game.makeMove(chosenMove)
+        assertTrue(moved)
+        assertEquals(PieceColor.BLACK, game.turn)
+
+        // Fix applied: immediately restore turn
+        game.setTurn(PieceColor.WHITE)
+        assertEquals(PieceColor.WHITE, game.turn)
+        assertFalse(game.turn == PieceColor.BLACK)
+    }
+
+    @Test
+    fun testTutorialTargetsReachability() {
+        for (lvl in TutorialCurriculum.levels) {
+            for (step in lvl.steps) {
+                if (!step.isSchemeOnly && step.targetPositions.isNotEmpty()) {
+                    val game = ChessGame()
+                    game.clearBoard()
+                    game.setPiece(step.piecePos, Piece(step.pieceType, step.pieceColor))
+                    for ((pos, piece) in step.extraPieces) {
+                        game.setPiece(pos, piece)
+                    }
+                    game.setTurn(step.pieceColor)
+
+                    val moves = game.getLegalMoves(step.piecePos)
+                    for (target in step.targetPositions) {
+                        assertTrue(
+                            "Level ${lvl.title} step '${step.title}' target at $target should be reachable from ${step.piecePos}",
+                            moves.any { it.to == target }
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

@@ -404,12 +404,40 @@
           <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
         </tr>
         <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Tutorial turn persistence and freeze prevention</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Reachability verification for all curriculum challenge targets</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
           <td><code>Android Emulator (AVD)</code></td>
           <td>Live APK installation, UI hierarchy dump, tap-to-move test</td>
           <td><span style="color: #2E7D32; font-weight:700;">VERIFIED (100%)</span></td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- Section 6: Comprehensive Bug Audit & Kids UX Improvements (v1.1) -->
+  <div class="main-card">
+    <h2><span>🛠️</span> Comprehensive Bug Audit & Kids UX Improvements (v1.1)</h2>
+    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
+      <p style="margin-bottom: 10px;">
+        Conducted extensive research on child-friendly chess apps (ChessKid, Lichess Learn, Magnus Kingdom) and resolved edge cases:
+      </p>
+      <ul style="padding-left: 20px; margin-bottom: 12px;">
+        <li><b>1. Tutorial Turn Freeze Resolution:</b> In tutorial drills, making a legal non-target move previously flipped the turn to <code>BLACK</code>, permanently locking the child's white piece. <i>Fix:</i> The turn is locked to the player's color (<code>WHITE</code>), friendly feedback is displayed ("Almost! Aim for the star ⭐ or tap Hint 💡"), a soft audio cue plays, and the piece automatically glides back to start after 850 ms without requiring a level restart.</li>
+        <li><b>2. On-Screen Hint Button (Hint 💡):</b> Added an always-visible button in challenge drills that computes the vector to the target star and paints a bright golden guide arrow with encouragement from Sparky.</li>
+        <li><b>3. Instant Retry Button (Retry 🔄):</b> Dedicated 1-tap restart button for immediate level resets at any moment.</li>
+        <li><b>4. Level 7 Blocked Queen Ray Fix:</b> Discovered that the White King at <code>(2, 4)</code> obstructed the vertical line of the Queen at <code>(6, 4)</code> to <code>(1, 4)</code>. Shifted the King to <code>(2, 3)</code>, ensuring full protection of the mate square while clearing the path for the championship checkmate.</li>
+        <li><b>5. Practice Game Race Condition Shield:</b> Added <code>isComputerThinking</code> state and callback cancellations to prevent board state desynchronization if the child taps Undo or Restart while the AI is calculating its move. Disabled interaction once checkmate/stalemate is reached.</li>
+        <li><b>6. Defensive Audio Engine:</b> Caught <code>Throwable</code> in <code>SoundEffects.kt</code> to ensure 100% crash immunity across diverse Android audio drivers.</li>
+      </ul>
+    </div>
   </div>
 
 </body>

@@ -99,13 +99,87 @@
             android:layout_gravity="center" />
     </FrameLayout>
 
-    <!-- Bottom Controls / Continue button -->
+    <!-- Bottom Challenge Helpers: Hint & Retry -->
     <LinearLayout
+        android:id="@+id/containerTutorialTools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="12dp">
+        android:layout_marginTop="10dp"
+        android:visibility="gone">
+
+        <!-- Hint Button -->
+        <LinearLayout
+            android:id="@+id/btnTutorialHint"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_button_gold"
+            android:gravity="center"
+            android:paddingVertical="12dp"
+            android:layout_marginEnd="8dp"
+            android:elevation="3dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_hint"
+                android:contentDescription="Hint" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Hint 💡"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Retry Button -->
+        <LinearLayout
+            android:id="@+id/btnTutorialRestart"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_button_accent"
+            android:gravity="center"
+            android:paddingVertical="12dp"
+            android:layout_marginStart="8dp"
+            android:elevation="3dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_restart"
+                android:contentDescription="Restart challenge" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="Retry 🔄"
+                android:textColor="#FFFFFF"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Controls / Continue button -->
+    <LinearLayout
+        android:id="@+id/containerTutorialAction"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="10dp">
 
         <Button
             android:id="@+id/btnTutorialAction"

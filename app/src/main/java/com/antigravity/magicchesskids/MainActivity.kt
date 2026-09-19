@@ -144,6 +144,10 @@ class MainActivity : AppCompatActivity() {
         val tvStepCount = findViewById<TextView>(R.id.tvTutorialStepCount)
         val tvInstruction = findViewById<TextView>(R.id.tvTutorialInstruction)
         val boardView = findViewById<ChessBoardView>(R.id.chessBoardTutorial)
+        val containerTools = findViewById<View>(R.id.containerTutorialTools)
+        val btnHint = findViewById<View>(R.id.btnTutorialHint)
+        val btnRestart = findViewById<View>(R.id.btnTutorialRestart)
+        val containerAction = findViewById<View>(R.id.containerTutorialAction)
         val btnAction = findViewById<Button>(R.id.btnTutorialAction)
         val btnBack = findViewById<ImageView>(R.id.btnTutorialBack)
         val btnSound = findViewById<ImageView>(R.id.btnTutorialSound)
@@ -155,7 +159,11 @@ class MainActivity : AppCompatActivity() {
             updateSoundIcon(btnSound)
         }
 
+        var resetRunnable: Runnable? = null
+
         btnBack.setOnClickListener {
+            resetRunnable?.let { boardView.removeCallbacks(it) }
+            resetRunnable = null
             SoundEffects.playPop()
             showTutorialLevels()
         }
@@ -163,20 +171,35 @@ class MainActivity : AppCompatActivity() {
         var currentStepIndex = 0
 
         fun loadStep(stepIdx: Int) {
+            resetRunnable?.let { boardView.removeCallbacks(it) }
+            resetRunnable = null
+
             val step = level.steps[stepIdx]
             tvStepCount.text = "Step ${stepIdx + 1} of ${level.steps.size}"
             tvInstruction.text = step.instruction
 
             val game = ChessGame()
-            game.clearBoard()
+            val remainingTargets = step.targetPositions.toMutableSet()
 
-            game.setPiece(step.piecePos, Piece(step.pieceType, step.pieceColor))
-            for ((pos, piece) in step.extraPieces) {
-                game.setPiece(pos, piece)
+            fun resetStepBoard() {
+                resetRunnable?.let { boardView.removeCallbacks(it) }
+                resetRunnable = null
+
+                game.clearBoard()
+                game.setPiece(step.piecePos, Piece(step.pieceType, step.pieceColor))
+                for ((pos, piece) in step.extraPieces) {
+                    game.setPiece(pos, piece)
+                }
+                game.setTurn(step.pieceColor)
+
+                boardView.setGame(game)
+                boardView.tutorialTargetPositions = remainingTargets.toSet()
+                boardView.tutorialArrows = emptyList()
+                boardView.isInteractive = !step.isSchemeOnly
+                boardView.invalidate()
             }
-            game.setTurn(step.pieceColor)
 
-            boardView.setGame(game)
+            resetStepBoard()
 
             if (step.isSchemeOnly) {
                 val moves = game.generatePseudoMoves(step.piecePos)
@@ -185,6 +208,8 @@ class MainActivity : AppCompatActivity() {
                 boardView.isInteractive = false
                 boardView.invalidate()
 
+                containerTools.visibility = View.GONE
+                containerAction.visibility = View.VISIBLE
                 btnAction.visibility = View.VISIBLE
                 btnAction.text = "Got it! Let's practice 🚀"
                 btnAction.setOnClickListener {
@@ -195,44 +220,89 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                boardView.tutorialArrows = emptyList()
-                boardView.tutorialTargetPositions = step.targetPositions
-                boardView.isInteractive = true
-                boardView.invalidate()
-
+                containerTools.visibility = View.VISIBLE
+                containerAction.visibility = View.GONE
                 btnAction.visibility = View.GONE
 
-                boardView.onUserMoveListener = { from, to ->
-                    if (step.targetPositions.contains(to)) {
-                        game.makeMove(Move(from, to))
-                        boardView.tutorialTargetPositions = emptySet()
-                        boardView.triggerConfetti()
-                        SoundEffects.playStarCollect()
-                        tvInstruction.text = step.successText
+                // Helper: Hint 💡
+                btnHint.setOnClickListener {
+                    resetRunnable?.let { boardView.removeCallbacks(it) }
+                    resetRunnable = null
+                    resetStepBoard()
+                    val target = remainingTargets.firstOrNull()
+                    if (target != null) {
+                        boardView.tutorialArrows = listOf(Pair(step.piecePos, target))
+                        boardView.invalidate()
+                        SoundEffects.playHint()
+                        tvInstruction.text = "Hint! Follow the golden arrow to the star ⭐"
+                    }
+                }
 
-                        btnAction.visibility = View.VISIBLE
-                        if (currentStepIndex + 1 < level.steps.size) {
-                            btnAction.text = "Next challenge! 🌟"
-                            btnAction.setOnClickListener {
-                                SoundEffects.playPop()
-                                currentStepIndex++
-                                loadStep(currentStepIndex)
+                // Helper: Retry 🔄
+                btnRestart.setOnClickListener {
+                    SoundEffects.playPop()
+                    remainingTargets.clear()
+                    remainingTargets.addAll(step.targetPositions)
+                    tvInstruction.text = step.instruction
+                    resetStepBoard()
+                }
+
+                boardView.onUserMoveListener = { from, to ->
+                    if (remainingTargets.contains(to)) {
+                        game.makeMove(Move(from, to))
+                        game.setTurn(step.pieceColor)
+                        remainingTargets.remove(to)
+                        boardView.tutorialTargetPositions = remainingTargets.toSet()
+                        boardView.tutorialArrows = emptyList()
+
+                        if (remainingTargets.isEmpty()) {
+                            boardView.triggerConfetti()
+                            SoundEffects.playStarCollect()
+                            tvInstruction.text = step.successText
+
+                            containerTools.visibility = View.GONE
+                            containerAction.visibility = View.VISIBLE
+                            btnAction.visibility = View.VISIBLE
+
+                            if (currentStepIndex + 1 < level.steps.size) {
+                                btnAction.text = "Next challenge! 🌟"
+                                btnAction.setOnClickListener {
+                                    SoundEffects.playPop()
+                                    currentStepIndex++
+                                    loadStep(currentStepIndex)
+                                }
+                            } else {
+                                tutorialManager.setLevelStars(level.id, 3)
+                                SoundEffects.playLevelComplete()
+                                btnAction.text = "Level complete! You earned 3 ⭐⭐⭐"
+                                btnAction.setOnClickListener {
+                                    showCelebrationDialog(level)
+                                }
+                                boardView.postDelayed({
+                                    showCelebrationDialog(level)
+                                }, 700)
                             }
                         } else {
-                            tutorialManager.setLevelStars(level.id, 3)
-                            SoundEffects.playLevelComplete()
-                            btnAction.text = "Level complete! You earned 3 ⭐⭐⭐"
-                            btnAction.setOnClickListener {
-                                showCelebrationDialog(level)
-                            }
-                            boardView.postDelayed({
-                                showCelebrationDialog(level)
-                            }, 700)
+                            SoundEffects.playStarCollect()
+                            tvInstruction.text = "Star collected! Catch the next one! ⭐"
+                            boardView.invalidate()
                         }
                     } else {
+                        // Non-target move: friendly feedback and clean auto-reset
                         game.makeMove(Move(from, to))
-                        SoundEffects.playMove()
+                        game.setTurn(step.pieceColor)
+                        boardView.tutorialArrows = emptyList()
+                        SoundEffects.playInvalid()
+                        tvInstruction.text = "Almost! Aim for the star ⭐ or tap Hint 💡"
                         boardView.invalidate()
+
+                        boardView.isInteractive = false
+                        val r = Runnable {
+                            resetStepBoard()
+                            tvInstruction.text = step.instruction
+                        }
+                        resetRunnable = r
+                        boardView.postDelayed(r, 850)
                     }
                 }
             }
@@ -306,7 +376,13 @@ class MainActivity : AppCompatActivity() {
             updateSoundIcon(btnSound)
         }
 
+        var isComputerThinking = false
+        var computerRunnable: Runnable? = null
+
         btnBack.setOnClickListener {
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
             SoundEffects.playPop()
             showMainMenu()
         }
@@ -334,6 +410,7 @@ class MainActivity : AppCompatActivity() {
             boardView.invalidate()
 
             if (game.isCheckmate(PieceColor.BLACK)) {
+                boardView.isInteractive = false
                 boardView.triggerConfetti()
                 SoundEffects.playVictory()
                 tvSparky.text = "Congratulations!!! You won! 🏆"
@@ -343,6 +420,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (game.isCheckmate(PieceColor.WHITE)) {
+                boardView.isInteractive = false
                 tvSparky.text = "Great try! You almost had me! 🤝"
                 tvStatus.text = "Checkmate! You'll get it next time! ✨"
                 showVictoryGameDialog(playerWon = false)
@@ -350,6 +428,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (game.isStalemate(PieceColor.WHITE) || game.isStalemate(PieceColor.BLACK)) {
+                boardView.isInteractive = false
                 tvSparky.text = "Magical Draw! Well played 🤝"
                 tvStatus.text = "Stalemate, draw! 🕊️"
                 return true
@@ -368,10 +447,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun playComputerTurn() {
+            isComputerThinking = true
             boardView.isInteractive = false
             tvSparky.text = "Sparky is thinking... 🤔"
 
-            boardView.postDelayed({
+            val r = Runnable {
+                isComputerThinking = false
                 val move = game.makeComputerMove()
                 boardView.isInteractive = true
                 if (move != null) {
@@ -386,7 +467,9 @@ class MainActivity : AppCompatActivity() {
                     tvSparky.text = phrases.random()
                     checkGameStatus()
                 }
-            }, 650)
+            }
+            computerRunnable = r
+            boardView.postDelayed(r, 650)
         }
 
         fun handlePlayerMove(from: Position, to: Position, promoteTo: PieceType = PieceType.QUEEN) {
@@ -413,6 +496,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnHint.setOnClickListener {
+            if (isComputerThinking) return@setOnClickListener
             if (game.turn == PieceColor.WHITE) {
                 val hint = game.getBestHint()
                 if (hint != null) {
@@ -425,6 +509,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnUndo.setOnClickListener {
+            if (isComputerThinking) return@setOnClickListener
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
+
             if (game.undo()) {
                 if (game.turn == PieceColor.BLACK) {
                     game.undo()
@@ -432,6 +521,7 @@ class MainActivity : AppCompatActivity() {
                 boardView.hintMove = null
                 boardView.selectSquare(null)
                 boardView.updateCheckState()
+                boardView.isInteractive = true
                 boardView.invalidate()
                 updateCapturedDisplay()
                 SoundEffects.playPop()
@@ -441,6 +531,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnRestart.setOnClickListener {
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
             SoundEffects.playPop()
             game.resetToStandard()
             boardView.setGame(game)
