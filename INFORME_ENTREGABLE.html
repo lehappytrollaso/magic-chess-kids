@@ -426,16 +426,30 @@
   <div class="main-card">
     <h2><span>🛠️</span> Comprehensive Bug Audit & Kids UX Improvements (v1.1)</h2>
     <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
-      <p style="margin-bottom: 10px;">
-        Conducted extensive research on child-friendly chess apps (ChessKid, Lichess Learn, Magnus Kingdom) and resolved edge cases:
+      <ul style="padding-left: 20px; margin-bottom: 12px;">
+        <li><b>1. Tutorial Turn Freeze Resolution:</b> Turn locked to <code>WHITE</code> on non-target moves, preventing piece lockup with gentle auto-reset in 850 ms.</li>
+        <li><b>2. On-Screen Hint Button (Hint 💡):</b> Draws a golden arrow toward the target star.</li>
+        <li><b>3. Instant Retry Button (Retry 🔄):</b> Dedicated 1-tap restart button.</li>
+        <li><b>4. Level 7 Blocked Queen Ray Fix:</b> White King adjusted to <code>(2, 3)</code> clearing path for checkmate.</li>
+        <li><b>5. Practice Game Race Condition Shield:</b> Added <code>isComputerThinking</code> state and callback cancellations.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Section 7: Advanced Audit v1.2: Zero Lockups, Drag & Drop and Toddler Ergonomics -->
+  <div class="main-card" style="border: 2px solid #7E57C2; background: #FAF9FE;">
+    <h2><span>✨</span> Advanced Audit v1.2: Zero Lockups, Drag & Drop and Toddler Ergonomics</h2>
+    <div style="font-size: 0.9rem; color: var(--text-main); line-height: 1.7;">
+      <p style="margin-bottom: 12px;">
+        Deep usability review tailored for the psychomotor skills of young children (ages 4-9), eliminating any scenario where the game could feel unresponsive, delayed, or confusing:
       </p>
       <ul style="padding-left: 20px; margin-bottom: 12px;">
-        <li><b>1. Tutorial Turn Freeze Resolution:</b> In tutorial drills, making a legal non-target move previously flipped the turn to <code>BLACK</code>, permanently locking the child's white piece. <i>Fix:</i> The turn is locked to the player's color (<code>WHITE</code>), friendly feedback is displayed ("Almost! Aim for the star ⭐ or tap Hint 💡"), a soft audio cue plays, and the piece automatically glides back to start after 850 ms without requiring a level restart.</li>
-        <li><b>2. On-Screen Hint Button (Hint 💡):</b> Added an always-visible button in challenge drills that computes the vector to the target star and paints a bright golden guide arrow with encouragement from Sparky.</li>
-        <li><b>3. Instant Retry Button (Retry 🔄):</b> Dedicated 1-tap restart button for immediate level resets at any moment.</li>
-        <li><b>4. Level 7 Blocked Queen Ray Fix:</b> Discovered that the White King at <code>(2, 4)</code> obstructed the vertical line of the Queen at <code>(6, 4)</code> to <code>(1, 4)</code>. Shifted the King to <code>(2, 3)</code>, ensuring full protection of the mate square while clearing the path for the championship checkmate.</li>
-        <li><b>5. Practice Game Race Condition Shield:</b> Added <code>isComputerThinking</code> state and callback cancellations to prevent board state desynchronization if the child taps Undo or Restart while the AI is calculating its move. Disabled interaction once checkmate/stalemate is reached.</li>
-        <li><b>6. Defensive Audio Engine:</b> Caught <code>Throwable</code> in <code>SoundEffects.kt</code> to ensure 100% crash immunity across diverse Android audio drivers.</li>
+        <li><b>1. Full Dual Drag-and-Drop + Tap-to-Move Gesture Support:</b> Young toddlers naturally try to physically drag pieces across the board. Implemented fluid gesture recognition with 1.15x piece elevation, floating soft drop shadow, and origin square ghosting—fully hardware-accelerated.</li>
+        <li><b>2. Smart Direct Tap on Target Star:</b> When a child taps the destination star or square directly without first selecting the piece, the engine detects the unique friendly piece capable of reaching it and moves it automatically, bypassing the friction of a strict two-step touch requirement.</li>
+        <li><b>3. Zero-Lag Instant Reset on Tap:</b> If the child touches the screen during the 850 ms auto-reset period after an off-target move, the timer cancels immediately and resets the board on the millisecond with zero perceived delay.</li>
+        <li><b>4. Interactive Scheme Screen Guidance:</b> Tapping the chessboard during conceptual scheme screens prompts helpful guidance from Sparky ("Look at the arrows! Tap the green button below when ready to play 👇") and triggers a playful scale pulse on the action button.</li>
+        <li><b>5. Dialog Stacking Prevention:</b> Added active dialog tracking (<code>isShowing</code>) and pending runnable cancellation across both celebration and victory dialogs, preventing duplicate stacked overlays from rapid tapping.</li>
+        <li><b>6. Child-First Ergonomics (Touch Targets ≥ 54dp):</b> Toolbar icons enlarged to 48dp with 11dp padding, helper tool buttons to <code>minHeight="54dp"</code>, and primary action buttons to 56dp. Instruction text increased to 16sp with open line-spacing for effortless legibility.</li>
       </ul>
     </div>
   </div>

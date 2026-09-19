@@ -17,6 +17,7 @@ class ChessBoardView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    // Colors
     private val colorLightSquare = Color.parseColor("#FFF6E6")
     private val colorDarkSquare = Color.parseColor("#9C88B9")
     private val colorSelected = Color.parseColor("#FFE082")
@@ -26,6 +27,7 @@ class ChessBoardView @JvmOverloads constructor(
     private val colorBorder = Color.parseColor("#7E57C2")
     private val colorArrow = Color.parseColor("#FFB300")
 
+    // Paints
     private val squarePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val highlightPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -51,28 +53,52 @@ class ChessBoardView @JvmOverloads constructor(
         typeface = Typeface.DEFAULT_BOLD
     }
 
+    // Board Geometry
     private var boardLeft = 0f
     private var boardTop = 0f
     private var boardSize = 0f
     private var squareSize = 0f
 
+    // Piece Drawables Cache
     private val pieceDrawables = mutableMapOf<Pair<PieceType, PieceColor>, Drawable>()
     private var starDrawable: Drawable? = null
     private var trophyDrawable: Drawable? = null
 
+    // State
     private var chessGame: ChessGame? = null
     var selectedPosition: Position? = null
         private set
     private var validMovesForSelected = listOf<Move>()
 
+    // Visual overlay helpers
     var kingInCheckPosition: Position? = null
     var hintMove: Move? = null
     var tutorialArrows = listOf<Pair<Position, Position>>()
     var tutorialTargetPositions = setOf<Position>()
     var isInteractive = true
 
+    // Interaction Callbacks
     var onUserMoveListener: ((from: Position, to: Position) -> Unit)? = null
+    var onSchemeTapListener: (() -> Unit)? = null
+    var onPendingResetTapListener: (() -> Unit)? = null
+    var onEnemyPieceTappedListener: (() -> Unit)? = null
+    var onIllegalMoveListener: (() -> Unit)? = null
 
+    // Drag-and-drop state
+    var isDragging = false
+        private set
+    private var dragStartPos: Position? = null
+    private var dragCurrentX = 0f
+    private var dragCurrentY = 0f
+    private var downX = 0f
+    private var downY = 0f
+    private val touchSlop = 12f
+    private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#33000000")
+        style = Paint.Style.FILL
+    }
+
+    // Particle system for celebration
     private val particles = mutableListOf<Particle>()
     private var particleAnimator: ValueAnimator? = null
 
@@ -84,9 +110,10 @@ class ChessBoardView @JvmOverloads constructor(
         var color: Int,
         var size: Float,
         var alpha: Float = 1f,
-        val shape: Int = 0
+        val shape: Int = 0 // 0: circle, 1: star
     )
 
+    // Pulse animation for destination dots
     private var pulseRadiusRatio = 0.22f
     private var pulseAnimator: ValueAnimator? = null
 
@@ -137,6 +164,8 @@ class ChessBoardView @JvmOverloads constructor(
         selectedPosition = null
         validMovesForSelected = emptyList()
         hintMove = null
+        isDragging = false
+        dragStartPos = null
         updateCheckState()
         invalidate()
     }
@@ -152,6 +181,8 @@ class ChessBoardView @JvmOverloads constructor(
 
     fun selectSquare(pos: Position?) {
         val game = chessGame ?: return
+        isDragging = false
+        dragStartPos = null
         if (pos == null) {
             selectedPosition = null
             validMovesForSelected = emptyList()
@@ -209,7 +240,7 @@ class ChessBoardView @JvmOverloads constructor(
                 for (p in particles) {
                     p.x += p.vx
                     p.y += p.vy
-                    p.vy += 22f * dt
+                    p.vy += 22f * dt // gravity
                     p.alpha = (p.alpha - 0.012f).coerceAtLeast(0f)
                 }
                 invalidate()
@@ -237,10 +268,12 @@ class ChessBoardView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
+        // 1. Draw Board background with rounded corners
         val boardRect = RectF(boardLeft, boardTop, boardLeft + boardSize, boardTop + boardSize)
         squarePaint.color = Color.parseColor("#4A3B57")
         canvas.drawRoundRect(boardRect, 28f, 28f, squarePaint)
 
+        // 2. Draw Squares
         for (r in 0..7) {
             for (c in 0..7) {
                 val isLight = (r + c) % 2 == 0
@@ -253,12 +286,14 @@ class ChessBoardView @JvmOverloads constructor(
                 squarePaint.color = if (isLight) colorLightSquare else colorDarkSquare
                 canvas.drawRect(squareRect, squarePaint)
 
+                // Selected square highlight
                 val currentPos = Position(r, c)
                 if (currentPos == selectedPosition) {
                     highlightPaint.color = colorSelected
                     canvas.drawRect(squareRect, highlightPaint)
                 }
 
+                // Check warning halo
                 if (currentPos == kingInCheckPosition) {
                     highlightPaint.color = colorCheckHalo
                     canvas.drawRect(squareRect, highlightPaint)
@@ -266,9 +301,11 @@ class ChessBoardView @JvmOverloads constructor(
             }
         }
 
+        // 3. Draw Board Outer Border
         borderPaint.color = colorBorder
         canvas.drawRoundRect(boardRect, 16f, 16f, borderPaint)
 
+        // 4. Draw Coordinates ('a'-'h', '1'-'8')
         for (c in 0..7) {
             val fileChar = ('a' + c).toString()
             val x = boardLeft + c * squareSize + squareSize / 2f - 6f
@@ -282,14 +319,17 @@ class ChessBoardView @JvmOverloads constructor(
             canvas.drawText(rankChar, x, y, textPaint)
         }
 
+        // 5. Draw Tutorial Movement Scheme Arrows
         for ((from, to) in tutorialArrows) {
             drawCurvedOrStraightArrow(canvas, from, to, colorArrow)
         }
 
+        // 6. Draw Hint Arrow (if active)
         hintMove?.let {
             drawCurvedOrStraightArrow(canvas, it.from, it.to, Color.parseColor("#00E5FF"))
         }
 
+        // 7. Draw Target Stars / Objectives (in Tutorial)
         for (target in tutorialTargetPositions) {
             val cx = boardLeft + (target.col + 0.5f) * squareSize
             val cy = boardTop + (target.row + 0.5f) * squareSize
@@ -305,25 +345,37 @@ class ChessBoardView @JvmOverloads constructor(
             }
         }
 
+        // 8. Draw Pieces
         val game = chessGame
         if (game != null) {
             for (r in 0..7) {
                 for (c in 0..7) {
-                    val piece = game.getPiece(Position(r, c)) ?: continue
+                    val currentPos = Position(r, c)
+                    val piece = game.getPiece(currentPos) ?: continue
                     val left = boardLeft + c * squareSize + squareSize * 0.08f
                     val top = boardTop + r * squareSize + squareSize * 0.08f
                     val right = left + squareSize * 0.84f
                     val bottom = top + squareSize * 0.84f
 
                     val drawable = pieceDrawables[Pair(piece.type, piece.color)]
-                    drawable?.let {
-                        it.setBounds(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-                        it.draw(canvas)
+                    if (isDragging && currentPos == dragStartPos) {
+                        drawable?.let {
+                            it.alpha = 75
+                            it.setBounds(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+                            it.draw(canvas)
+                            it.alpha = 255
+                        }
+                    } else {
+                        drawable?.let {
+                            it.setBounds(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+                            it.draw(canvas)
+                        }
                     }
                 }
             }
         }
 
+        // 9. Draw Valid Destination Indicators (Glowing dots and capture rings)
         for (move in validMovesForSelected) {
             val cx = boardLeft + (move.to.col + 0.5f) * squareSize
             val cy = boardTop + (move.to.row + 0.5f) * squareSize
@@ -339,6 +391,29 @@ class ChessBoardView @JvmOverloads constructor(
             }
         }
 
+        // 9.5 Draw Dragged Piece Floating with Soft Shadow
+        if (isDragging && dragStartPos != null) {
+            val draggedPiece = game?.getPiece(dragStartPos!!)
+            if (draggedPiece != null) {
+                val size = squareSize * 1.15f
+                val floatY = dragCurrentY - squareSize * 0.25f // Elevated slightly so finger doesn't hide it
+                val shadowRadius = squareSize * 0.35f
+                canvas.drawCircle(dragCurrentX, dragCurrentY - squareSize * 0.05f, shadowRadius, shadowPaint)
+
+                val left = (dragCurrentX - size / 2f).toInt()
+                val top = (floatY - size / 2f).toInt()
+                val right = (left + size).toInt()
+                val bottom = (top + size).toInt()
+
+                val drawable = pieceDrawables[Pair(draggedPiece.type, draggedPiece.color)]
+                drawable?.let {
+                    it.setBounds(left, top, right, bottom)
+                    it.draw(canvas)
+                }
+            }
+        }
+
+        // 10. Draw Celebration Particles
         if (particles.isNotEmpty()) {
             val particlePaint = Paint(Paint.ANTI_ALIAS_FLAG)
             for (p in particles) {
@@ -367,20 +442,25 @@ class ChessBoardView @JvmOverloads constructor(
         val dy = endY - startY
         val angle = atan2(dy.toDouble(), dx.toDouble())
 
+        // Stop line slightly before center of target square to make room for arrowhead
         val arrowHeadLength = squareSize * 0.28f
         val lineEndX = endX - (arrowHeadLength * 0.7f * cos(angle)).toFloat()
         val lineEndY = endY - (arrowHeadLength * 0.7f * sin(angle)).toFloat()
 
+        // Check if Knight move ("L" shape)
         val isKnightMove = (abs(from.row - to.row) == 2 && abs(from.col - to.col) == 1) ||
                 (abs(from.row - to.row) == 1 && abs(from.col - to.col) == 2)
 
         if (isKnightMove) {
+            // Draw "L" path
             val cornerX: Float
             val cornerY: Float
             if (abs(from.row - to.row) == 2) {
+                // First vertical, then horizontal
                 cornerX = startX
                 cornerY = endY
             } else {
+                // First horizontal, then vertical
                 cornerX = endX
                 cornerY = startY
             }
@@ -392,11 +472,13 @@ class ChessBoardView @JvmOverloads constructor(
             }
             canvas.drawPath(path, arrowPaint)
 
+            // Arrow head at destination
             val cornerDx = endX - cornerX
             val cornerDy = endY - cornerY
             val finalAngle = atan2(cornerDy.toDouble(), cornerDx.toDouble())
             drawArrowHead(canvas, endX, endY, finalAngle, arrowHeadLength)
         } else {
+            // Straight line
             canvas.drawLine(startX, startY, lineEndX, lineEndY, arrowPaint)
             drawArrowHead(canvas, endX, endY, angle, arrowHeadLength)
         }
@@ -418,57 +500,148 @@ class ChessBoardView @JvmOverloads constructor(
         canvas.drawPath(headPath, arrowHeadPaint)
     }
 
-    override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (!isInteractive || event.action != MotionEvent.ACTION_DOWN) {
-            return super.onTouchEvent(event)
+    private fun getSquareAt(x: Float, y: Float): Position? {
+        if (x < boardLeft || x > boardLeft + boardSize || y < boardTop || y > boardTop + boardSize) {
+            return null
         }
+        val col = ((x - boardLeft) / squareSize).toInt().coerceIn(0, 7)
+        val row = ((y - boardTop) / squareSize).toInt().coerceIn(0, 7)
+        return Position(row, col)
+    }
 
+    override fun onTouchEvent(event: MotionEvent): Boolean {
         val x = event.x
         val y = event.y
 
-        if (x < boardLeft || x > boardLeft + boardSize || y < boardTop || y > boardTop + boardSize) {
+        if (!isInteractive) {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                onPendingResetTapListener?.invoke() ?: onSchemeTapListener?.invoke()
+            }
             return true
         }
 
-        val col = ((x - boardLeft) / squareSize).toInt().coerceIn(0, 7)
-        val row = ((y - boardTop) / squareSize).toInt().coerceIn(0, 7)
-        val tappedPos = Position(row, col)
+        val game = chessGame ?: return super.onTouchEvent(event)
 
-        handleSquareTap(tappedPos)
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = x
+                downY = y
+                val pos = getSquareAt(x, y) ?: return true
+
+                val piece = game.getPiece(pos)
+                if (piece != null && piece.color == game.turn) {
+                    selectedPosition = pos
+                    validMovesForSelected = game.getLegalMoves(pos)
+                    hintMove = null
+                    dragStartPos = pos
+                    dragCurrentX = x
+                    dragCurrentY = y
+                    isDragging = false
+                    SoundEffects.playPop()
+                    invalidate()
+                    return true
+                } else {
+                    val selected = selectedPosition
+                    if (selected != null) {
+                        val matchingMove = validMovesForSelected.firstOrNull { it.to == pos }
+                        if (matchingMove != null) {
+                            hintMove = null
+                            selectedPosition = null
+                            validMovesForSelected = emptyList()
+                            invalidate()
+                            onUserMoveListener?.invoke(matchingMove.from, matchingMove.to)
+                            return true
+                        } else {
+                            selectedPosition = null
+                            validMovesForSelected = emptyList()
+                            SoundEffects.playInvalid()
+                            onIllegalMoveListener?.invoke()
+                            invalidate()
+                            return true
+                        }
+                    } else {
+                        // Smart direct tap: single reachable friendly piece auto-moves!
+                        val reachingPieces = (0..7).flatMap { r -> (0..7).map { c -> Position(r, c) } }
+                            .filter { fromPos ->
+                                val p = game.getPiece(fromPos)
+                                p != null && p.color == game.turn && game.getLegalMoves(fromPos).any { it.to == pos }
+                            }
+
+                        if (reachingPieces.size == 1) {
+                            val from = reachingPieces.first()
+                            hintMove = null
+                            selectedPosition = null
+                            validMovesForSelected = emptyList()
+                            invalidate()
+                            onUserMoveListener?.invoke(from, pos)
+                            return true
+                        } else {
+                            if (piece != null && piece.color != game.turn) {
+                                onEnemyPieceTappedListener?.invoke()
+                            } else {
+                                SoundEffects.playInvalid()
+                                onIllegalMoveListener?.invoke()
+                            }
+                        }
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                val start = dragStartPos
+                if (start != null) {
+                    val dist = hypot((x - downX).toDouble(), (y - downY).toDouble()).toFloat()
+                    if (!isDragging && dist > touchSlop) {
+                        isDragging = true
+                    }
+                    if (isDragging) {
+                        dragCurrentX = x
+                        dragCurrentY = y
+                        invalidate()
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP -> {
+                val start = dragStartPos
+                val wasDragging = isDragging
+                isDragging = false
+                dragStartPos = null
+
+                if (wasDragging && start != null) {
+                    val dropPos = getSquareAt(x, y)
+                    if (dropPos != null && dropPos != start) {
+                        val matchingMove = validMovesForSelected.firstOrNull { it.to == dropPos }
+                        if (matchingMove != null) {
+                            hintMove = null
+                            selectedPosition = null
+                            validMovesForSelected = emptyList()
+                            invalidate()
+                            onUserMoveListener?.invoke(matchingMove.from, matchingMove.to)
+                            return true
+                        } else {
+                            selectedPosition = null
+                            validMovesForSelected = emptyList()
+                            SoundEffects.playInvalid()
+                            onIllegalMoveListener?.invoke()
+                            invalidate()
+                            return true
+                        }
+                    } else {
+                        invalidate()
+                        return true
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_CANCEL -> {
+                isDragging = false
+                dragStartPos = null
+                invalidate()
+            }
+        }
+
         return true
-    }
-
-    private fun handleSquareTap(pos: Position) {
-        val game = chessGame ?: return
-
-        val selected = selectedPosition
-        if (selected != null) {
-            val matchingMove = validMovesForSelected.firstOrNull { it.to == pos }
-            if (matchingMove != null) {
-                hintMove = null
-                selectedPosition = null
-                validMovesForSelected = emptyList()
-                invalidate()
-                onUserMoveListener?.invoke(matchingMove.from, matchingMove.to)
-                return
-            }
-        }
-
-        val piece = game.getPiece(pos)
-        if (piece != null && piece.color == game.turn) {
-            selectedPosition = pos
-            validMovesForSelected = game.getLegalMoves(pos)
-            hintMove = null
-            SoundEffects.playPop()
-            invalidate()
-        } else {
-            if (selectedPosition != null) {
-                selectedPosition = null
-                validMovesForSelected = emptyList()
-                SoundEffects.playInvalid()
-                invalidate()
-            }
-        }
     }
 
     override fun onDetachedFromWindow() {

@@ -15,11 +15,11 @@
 
         <ImageView
             android:id="@+id/btnGameBack"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:background="@drawable/bg_button_circle"
             android:src="@drawable/ic_arrow_back"
-            android:padding="10dp"
+            android:padding="11dp"
             android:contentDescription="Back" />
 
         <TextView
@@ -34,21 +34,21 @@
 
         <ImageView
             android:id="@+id/btnGameRestart"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:background="@drawable/bg_button_circle"
             android:src="@drawable/ic_restart"
-            android:padding="10dp"
+            android:padding="11dp"
             android:layout_marginEnd="6dp"
             android:contentDescription="Restart" />
 
         <ImageView
             android:id="@+id/btnGameSound"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:background="@drawable/bg_button_circle"
             android:src="@drawable/ic_sound_on"
-            android:padding="10dp"
+            android:padding="11dp"
             android:contentDescription="Sound" />
     </LinearLayout>
 
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:text="Hi champion! Ready to play? 😊"
                 android:textColor="@color/primary"
-                android:textSize="13sp" />
+                android:textSize="14sp" />
         </LinearLayout>
 
         <!-- Captured White pieces by Sparky -->
@@ -162,7 +162,7 @@
                 android:layout_height="wrap_content"
                 android:text="It's your turn! Tap a piece to move"
                 android:textColor="@color/accent_mint"
-                android:textSize="13sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -189,6 +189,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:minHeight="54dp"
             android:orientation="horizontal"
             android:background="@drawable/bg_button_gold"
             android:gravity="center"
@@ -220,6 +221,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:minHeight="54dp"
             android:orientation="horizontal"
             android:background="@drawable/bg_button_primary"
             android:gravity="center"

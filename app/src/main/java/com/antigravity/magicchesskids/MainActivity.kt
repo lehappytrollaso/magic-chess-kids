@@ -208,6 +208,14 @@ class MainActivity : AppCompatActivity() {
                 boardView.isInteractive = false
                 boardView.invalidate()
 
+                boardView.onSchemeTapListener = {
+                    tvInstruction.text = "Look at the arrows! Tap the green button below when ready to play 👇"
+                    SoundEffects.playPop()
+                    btnAction.animate().scaleX(1.05f).scaleY(1.05f).setDuration(120).withEndAction {
+                        btnAction.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+                    }.start()
+                }
+
                 containerTools.visibility = View.GONE
                 containerAction.visibility = View.VISIBLE
                 btnAction.visibility = View.VISIBLE
@@ -220,6 +228,16 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             } else {
+                boardView.onSchemeTapListener = null
+                boardView.onPendingResetTapListener = null
+                boardView.onIllegalMoveListener = {
+                    tvInstruction.text = "Tap or drag towards the green dots or the star ⭐!"
+                }
+                boardView.onEnemyPieceTappedListener = {
+                    tvInstruction.text = "That's Sparky's piece! Move your white piece ✨"
+                    SoundEffects.playPop()
+                }
+
                 containerTools.visibility = View.VISIBLE
                 containerAction.visibility = View.GONE
                 btnAction.visibility = View.GONE
@@ -278,9 +296,11 @@ class MainActivity : AppCompatActivity() {
                                 btnAction.setOnClickListener {
                                     showCelebrationDialog(level)
                                 }
-                                boardView.postDelayed({
+                                val r = Runnable {
                                     showCelebrationDialog(level)
-                                }, 700)
+                                }
+                                pendingCelebrationRunnable = r
+                                boardView.postDelayed(r, 700)
                             }
                         } else {
                             SoundEffects.playStarCollect()
@@ -297,9 +317,19 @@ class MainActivity : AppCompatActivity() {
                         boardView.invalidate()
 
                         boardView.isInteractive = false
+                        // Allow immediate reset on tap without waiting 850ms
+                        boardView.onPendingResetTapListener = {
+                            resetRunnable?.let { boardView.removeCallbacks(it) }
+                            resetRunnable = null
+                            boardView.onPendingResetTapListener = null
+                            resetStepBoard()
+                            tvInstruction.text = step.instruction
+                        }
+
                         val r = Runnable {
                             resetStepBoard()
                             tvInstruction.text = step.instruction
+                            boardView.onPendingResetTapListener = null
                         }
                         resetRunnable = r
                         boardView.postDelayed(r, 850)
@@ -311,8 +341,23 @@ class MainActivity : AppCompatActivity() {
         loadStep(currentStepIndex)
     }
 
+    private var activeCelebrationDialog: Dialog? = null
+    private var pendingCelebrationRunnable: Runnable? = null
+
     private fun showCelebrationDialog(level: TutorialLevel) {
+        if (activeCelebrationDialog?.isShowing == true) return
+        pendingCelebrationRunnable?.let {
+            findViewById<View>(R.id.chessBoardTutorial)?.removeCallbacks(it)
+        }
+        pendingCelebrationRunnable = null
+
         val dialog = Dialog(this)
+        activeCelebrationDialog = dialog
+        dialog.setOnDismissListener {
+            if (activeCelebrationDialog == dialog) {
+                activeCelebrationDialog = null
+            }
+        }
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_victory)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -390,6 +435,16 @@ class MainActivity : AppCompatActivity() {
         val game = ChessGame()
         boardView.setGame(game)
         boardView.isInteractive = true
+        boardView.onSchemeTapListener = null
+        boardView.onPendingResetTapListener = null
+        boardView.onEnemyPieceTappedListener = {
+            tvSparky.text = "That piece belongs to Sparky! Tap your white pieces ✨"
+            tvStatus.text = "Move your white pieces! ✨"
+            SoundEffects.playPop()
+        }
+        boardView.onIllegalMoveListener = {
+            tvStatus.text = "That square is not valid! Tap the green dots or shield 🛡️"
+        }
 
         fun updateCapturedDisplay() {
             fun pieceToEmoji(p: Piece): String = when (p.type) {
@@ -576,8 +631,17 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private var activeVictoryGameDialog: Dialog? = null
+
     private fun showVictoryGameDialog(playerWon: Boolean) {
+        if (activeVictoryGameDialog?.isShowing == true) return
         val dialog = Dialog(this)
+        activeVictoryGameDialog = dialog
+        dialog.setOnDismissListener {
+            if (activeVictoryGameDialog == dialog) {
+                activeVictoryGameDialog = null
+            }
+        }
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.dialog_victory)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
