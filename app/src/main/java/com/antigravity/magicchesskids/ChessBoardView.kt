@@ -11,20 +11,45 @@ import androidx.core.content.ContextCompat
 import kotlin.math.*
 import kotlin.random.Random
 
+enum class BoardTheme(
+    val title: String,
+    val lightSquare: Int,
+    val darkSquare: Int,
+    val border: Int,
+    val accentDot: Int
+) {
+    FANTASY("Magic Realm", Color.parseColor("#FFF6E6"), Color.parseColor("#9C88B9"), Color.parseColor("#7E57C2"), Color.parseColor("#26A69A")),
+    FOREST("Emerald Forest", Color.parseColor("#F1F8E9"), Color.parseColor("#81C784"), Color.parseColor("#388E3C"), Color.parseColor("#FFA000")),
+    ICE("Glacier Ice", Color.parseColor("#E3F2FD"), Color.parseColor("#90CAF9"), Color.parseColor("#1976D2"), Color.parseColor("#FF6584")),
+    CANDY("Candy Land", Color.parseColor("#FFF8E1"), Color.parseColor("#F48FB1"), Color.parseColor("#C2185B"), Color.parseColor("#26A69A"))
+}
+
 class ChessBoardView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    var currentTheme: BoardTheme = BoardTheme.FANTASY
+        set(value) {
+            field = value
+            colorLightSquare = value.lightSquare
+            colorDarkSquare = value.darkSquare
+            colorBorder = value.border
+            colorValidDot = value.accentDot
+            borderPaint.color = value.border
+            dotPaint.color = value.accentDot
+            invalidate()
+        }
+
     // Colors
-    private val colorLightSquare = Color.parseColor("#FFF6E6")
-    private val colorDarkSquare = Color.parseColor("#9C88B9")
+    private var colorLightSquare = Color.parseColor("#FFF6E6")
+    private var colorDarkSquare = Color.parseColor("#9C88B9")
     private val colorSelected = Color.parseColor("#FFE082")
-    private val colorValidDot = Color.parseColor("#26A69A")
+    private var colorValidDot = Color.parseColor("#26A69A")
     private val colorValidRing = Color.parseColor("#FF5252")
     private val colorCheckHalo = Color.parseColor("#FF8A80")
-    private val colorBorder = Color.parseColor("#7E57C2")
+    private var colorBorder = Color.parseColor("#7E57C2")
     private val colorArrow = Color.parseColor("#FFB300")
 
     // Paints
@@ -63,6 +88,7 @@ class ChessBoardView @JvmOverloads constructor(
     private val pieceDrawables = mutableMapOf<Pair<PieceType, PieceColor>, Drawable>()
     private var starDrawable: Drawable? = null
     private var trophyDrawable: Drawable? = null
+    private var lavaDrawable: Drawable? = null
 
     // State
     private var chessGame: ChessGame? = null
@@ -75,6 +101,7 @@ class ChessBoardView @JvmOverloads constructor(
     var hintMove: Move? = null
     var tutorialArrows = listOf<Pair<Position, Position>>()
     var tutorialTargetPositions = setOf<Position>()
+    var lavaPositions = setOf<Position>()
     var isInteractive = true
 
     // Interaction Callbacks
@@ -144,6 +171,7 @@ class ChessBoardView @JvmOverloads constructor(
 
         starDrawable = ContextCompat.getDrawable(context, R.drawable.ic_star_gold)
         trophyDrawable = ContextCompat.getDrawable(context, R.drawable.ic_trophy)
+        lavaDrawable = ContextCompat.getDrawable(context, R.drawable.ic_flame_lava)
     }
 
     private fun startPulseAnimation() {
@@ -193,8 +221,8 @@ class ChessBoardView @JvmOverloads constructor(
         val piece = game.getPiece(pos)
         if (piece != null && piece.color == game.turn) {
             selectedPosition = pos
-            validMovesForSelected = game.getLegalMoves(pos)
-            SoundEffects.playPop()
+            validMovesForSelected = game.getLegalMoves(pos).filter { !lavaPositions.contains(it.to) }
+            SoundEffects.playPop(context)
             invalidate()
         } else {
             selectedPosition = null
@@ -341,6 +369,25 @@ class ChessBoardView @JvmOverloads constructor(
                     (cx + iconRadius).toInt(),
                     (cy + iconRadius).toInt()
                 )
+                it.draw(canvas)
+            }
+        }
+
+        // 7.5 Draw Lava / Obstacle squares (in Minigames)
+        for (lava in lavaPositions) {
+            val left = boardLeft + lava.col * squareSize
+            val top = boardTop + lava.row * squareSize
+            val lavaTilePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.parseColor("#44FF3D00")
+                style = Paint.Style.FILL
+            }
+            canvas.drawRect(left, top, left + squareSize, top + squareSize, lavaTilePaint)
+
+            val cx = boardLeft + (lava.col + 0.5f) * squareSize
+            val cy = boardTop + (lava.row + 0.5f) * squareSize
+            val r = squareSize * 0.32f
+            lavaDrawable?.let {
+                it.setBounds((cx - r).toInt(), (cy - r).toInt(), (cx + r).toInt(), (cy + r).toInt())
                 it.draw(canvas)
             }
         }
@@ -531,13 +578,13 @@ class ChessBoardView @JvmOverloads constructor(
                 val piece = game.getPiece(pos)
                 if (piece != null && piece.color == game.turn) {
                     selectedPosition = pos
-                    validMovesForSelected = game.getLegalMoves(pos)
+                    validMovesForSelected = game.getLegalMoves(pos).filter { !lavaPositions.contains(it.to) }
                     hintMove = null
                     dragStartPos = pos
                     dragCurrentX = x
                     dragCurrentY = y
                     isDragging = false
-                    SoundEffects.playPop()
+                    SoundEffects.playPop(context)
                     invalidate()
                     return true
                 } else {
@@ -554,7 +601,7 @@ class ChessBoardView @JvmOverloads constructor(
                         } else {
                             selectedPosition = null
                             validMovesForSelected = emptyList()
-                            SoundEffects.playInvalid()
+                            SoundEffects.playInvalid(context)
                             onIllegalMoveListener?.invoke()
                             invalidate()
                             return true
@@ -564,7 +611,7 @@ class ChessBoardView @JvmOverloads constructor(
                         val reachingPieces = (0..7).flatMap { r -> (0..7).map { c -> Position(r, c) } }
                             .filter { fromPos ->
                                 val p = game.getPiece(fromPos)
-                                p != null && p.color == game.turn && game.getLegalMoves(fromPos).any { it.to == pos }
+                                p != null && p.color == game.turn && game.getLegalMoves(fromPos).filter { !lavaPositions.contains(it.to) }.any { it.to == pos }
                             }
 
                         if (reachingPieces.size == 1) {
@@ -579,7 +626,7 @@ class ChessBoardView @JvmOverloads constructor(
                             if (piece != null && piece.color != game.turn) {
                                 onEnemyPieceTappedListener?.invoke()
                             } else {
-                                SoundEffects.playInvalid()
+                                SoundEffects.playInvalid(context)
                                 onIllegalMoveListener?.invoke()
                             }
                         }
@@ -622,7 +669,7 @@ class ChessBoardView @JvmOverloads constructor(
                         } else {
                             selectedPosition = null
                             validMovesForSelected = emptyList()
-                            SoundEffects.playInvalid()
+                            SoundEffects.playInvalid(context)
                             onIllegalMoveListener?.invoke()
                             invalidate()
                             return true

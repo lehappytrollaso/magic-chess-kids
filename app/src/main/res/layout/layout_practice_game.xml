@@ -43,6 +43,16 @@
             android:contentDescription="Restart" />
 
         <ImageView
+            android:id="@+id/btnGameTheme"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_button_circle"
+            android:src="@drawable/ic_theme_palette"
+            android:padding="11dp"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="Themes" />
+
+        <ImageView
             android:id="@+id/btnGameSound"
             android:layout_width="46dp"
             android:layout_height="46dp"
@@ -65,8 +75,9 @@
         android:elevation="2dp">
 
         <ImageView
-            android:layout_width="42dp"
-            android:layout_height="42dp"
+            android:id="@+id/ivSparkyAvatar"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:src="@drawable/ic_robot_sparky"
             android:contentDescription="Sparky" />
 
@@ -91,7 +102,59 @@
                 android:layout_height="wrap_content"
                 android:text="Hi champion! Ready to play? 😊"
                 android:textColor="@color/primary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
+
+            <!-- Difficulty Selector Pills -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:id="@+id/btnDiffToddler"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🐣 Toddler"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_pill_selected"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btnDiffFriend"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🤝 Friend"
+                    android:textColor="@color/text_dark"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_pill_unselected"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <TextView
+                    android:id="@+id/btnDiffChampion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🏆 Champion"
+                    android:textColor="@color/text_dark"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_pill_unselected"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Captured White pieces by Sparky -->

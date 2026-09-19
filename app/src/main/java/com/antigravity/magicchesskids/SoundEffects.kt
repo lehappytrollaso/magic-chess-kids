@@ -1,5 +1,6 @@
 package com.antigravity.magicchesskids
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
@@ -11,59 +12,93 @@ import kotlin.math.sin
 object SoundEffects {
     private val executor = Executors.newSingleThreadExecutor()
     var isMuted = false
+    var isHapticEnabled = true
 
     private const val SAMPLE_RATE = 22050
 
-    fun playPop() {
+    fun triggerSoftHaptic(context: Context?) {
+        if (isMuted || !isHapticEnabled || context == null) return
+        try {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator ?: return
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(android.os.VibrationEffect.createOneShot(18, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(18)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    fun triggerSuccessHaptic(context: Context?) {
+        if (isMuted || !isHapticEnabled || context == null) return
+        try {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? android.os.Vibrator ?: return
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val timings = longArrayOf(0, 25, 60, 35)
+                vibrator.vibrate(android.os.VibrationEffect.createWaveform(timings, -1))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(50)
+            }
+        } catch (_: Throwable) {}
+    }
+
+    fun playPop(context: Context? = null) {
+        triggerSoftHaptic(context)
         if (isMuted) return
         executor.execute {
             playToneSweep(550.0, 950.0, 0.07, 0.5)
         }
     }
 
-    fun playMove() {
+    fun playMove(context: Context? = null) {
+        triggerSoftHaptic(context)
         if (isMuted) return
         executor.execute {
             playWoodTap(0.06, 0.7)
         }
     }
 
-    fun playCapture() {
+    fun playCapture(context: Context? = null) {
+        triggerSoftHaptic(context)
         if (isMuted) return
         executor.execute {
             playChord(doubleArrayOf(784.0, 987.77, 1318.51), 0.22, 0.6)
         }
     }
 
-    fun playStarCollect() {
+    fun playStarCollect(context: Context? = null) {
+        triggerSoftHaptic(context)
         if (isMuted) return
         executor.execute {
             playArpeggio(doubleArrayOf(523.25, 659.25, 783.99, 1046.50), 0.08, 0.6)
         }
     }
 
-    fun playLevelComplete() {
+    fun playLevelComplete(context: Context? = null) {
+        triggerSuccessHaptic(context)
         if (isMuted) return
         executor.execute {
             playArpeggio(doubleArrayOf(440.0, 554.37, 659.25, 880.0, 1108.73), 0.12, 0.7)
         }
     }
 
-    fun playVictory() {
+    fun playVictory(context: Context? = null) {
+        triggerSuccessHaptic(context)
         if (isMuted) return
         executor.execute {
             playFanfare()
         }
     }
 
-    fun playInvalid() {
+    fun playInvalid(context: Context? = null) {
         if (isMuted) return
         executor.execute {
             playToneSweep(320.0, 180.0, 0.14, 0.4)
         }
     }
 
-    fun playHint() {
+    fun playHint(context: Context? = null) {
         if (isMuted) return
         executor.execute {
             playToneSweep(880.0, 1174.66, 0.18, 0.5)
@@ -159,6 +194,7 @@ object SoundEffects {
             offset += noteSamples
         }
 
+        // Final celebratory sustained note with harmonic
         val lastFreq = notes[3]
         for (i in 0 until finalSamples) {
             val t = i.toDouble() / SAMPLE_RATE
@@ -192,6 +228,7 @@ object SoundEffects {
 
             audioTrack.write(buffer, 0, buffer.size)
             audioTrack.play()
+            // Release after playing
             Thread.sleep((buffer.size.toDouble() / SAMPLE_RATE * 1000).toLong() + 30)
             audioTrack.stop()
             audioTrack.release()

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/bg_light"
+    android:padding="16dp">
+
+    <!-- Top Navigation Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/btnMinigamesBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_button_circle"
+            android:src="@drawable/ic_arrow_back"
+            android:padding="11dp"
+            android:contentDescription="Back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Magic Minigames ⚔️"
+            android:textColor="@color/primary_dark"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:gravity="center" />
+
+        <ImageView
+            android:id="@+id/btnMinigamesTheme"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_button_circle"
+            android:src="@drawable/ic_theme_palette"
+            android:padding="11dp"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="Themes" />
+
+        <ImageView
+            android:id="@+id/btnMinigamesSound"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_button_circle"
+            android:src="@drawable/ic_sound_on"
+            android:padding="11dp"
+            android:contentDescription="Sound" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Learn tactics with quick, fun challenges! 🌟"
+        android:textColor="@color/text_muted"
+        android:textSize="14sp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Minigames Cards -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Card 1: Pawn Wars -->
+        <LinearLayout
+            android:id="@+id/btnMinigamePawnWars"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_card_rounded"
+            android:padding="18dp"
+            android:gravity="center_vertical"
+            android:elevation="4dp"
+            android:layout_marginBottom="18dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <FrameLayout
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_button_circle">
+                <ImageView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/piece_pawn_white"
+                    android:contentDescription="Pawn" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pawn Wars ⚔️"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="8 vs 8 pawns! First pawn across the board wins!"
+                    android:textColor="@color/text_muted"
+                    android:textSize="13sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_arrow_forward"
+                android:contentDescription="Play" />
+        </LinearLayout>
+
+        <!-- Card 2: The Hungry Knight -->
+        <LinearLayout
+            android:id="@+id/btnMinigameHungryKnight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_card_rounded"
+            android:padding="18dp"
+            android:gravity="center_vertical"
+            android:elevation="4dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <FrameLayout
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:background="@drawable/bg_button_circle">
+                <ImageView
+                    android:layout_width="46dp"
+                    android:layout_height="46dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/piece_knight_white"
+                    android:contentDescription="Knight" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="The Hungry Knight 🦄"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="L-jump to collect golden stars ⭐ and avoid burning lava 🔥!"
+                    android:textColor="@color/text_muted"
+                    android:textSize="13sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_arrow_forward"
+                android:contentDescription="Play" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

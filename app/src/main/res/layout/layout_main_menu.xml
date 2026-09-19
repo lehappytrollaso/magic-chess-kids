@@ -46,6 +46,17 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
+        <!-- Theme Button -->
+        <ImageView
+            android:id="@+id/btnThemeToggle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_button_circle"
+            android:src="@drawable/ic_theme_palette"
+            android:padding="11dp"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="Themes" />
+
         <!-- Sound Button -->
         <ImageView
             android:id="@+id/btnSoundToggle"
@@ -63,12 +74,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="24dp">
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="16dp">
 
         <ImageView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
             android:src="@drawable/ic_robot_sparky"
             android:contentDescription="Sparky" />
 
@@ -77,17 +88,17 @@
             android:layout_height="wrap_content"
             android:text="Magic Chess"
             android:textColor="@color/primary_dark"
-            android:textSize="32sp"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="6dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Learn to play while having fun! ✨"
             android:textColor="@color/text_muted"
-            android:textSize="16sp"
-            android:layout_marginTop="4dp" />
+            android:textSize="15sp"
+            android:layout_marginTop="2dp" />
     </LinearLayout>
 
     <!-- Main Navigation Cards -->
@@ -105,19 +116,19 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@drawable/bg_card_rounded"
-            android:padding="20dp"
+            android:padding="16dp"
             android:gravity="center_vertical"
             android:elevation="4dp"
             android:clickable="true"
             android:focusable="true">
 
             <FrameLayout
-                android:layout_width="68dp"
-                android:layout_height="68dp"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:background="@drawable/bg_button_circle">
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:layout_gravity="center"
                     android:src="@drawable/piece_knight_white"
                     android:contentDescription="Learn" />
@@ -135,16 +146,16 @@
                     android:layout_height="wrap_content"
                     android:text="Learn the Pieces"
                     android:textColor="@color/primary_dark"
-                    android:textSize="20sp"
+                    android:textSize="19sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Interactive tutorial with visual schemes ⭐"
+                    android:text="Interactive tutorial with schemes ⭐"
                     android:textColor="@color/text_muted"
-                    android:textSize="14sp"
-                    android:layout_marginTop="4dp" />
+                    android:textSize="13sp"
+                    android:layout_marginTop="3dp" />
             </LinearLayout>
 
             <ImageView
@@ -154,17 +165,74 @@
                 android:contentDescription="Go" />
         </LinearLayout>
 
-        <!-- Card 2: Friendly Match (Play vs AI) -->
+        <!-- Card 2: Magic Minigames -->
+        <LinearLayout
+            android:id="@+id/btnMenuMinigames"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/bg_card_rounded"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:elevation="4dp"
+            android:layout_marginTop="12dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <FrameLayout
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_button_circle">
+                <ImageView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/piece_pawn_white"
+                    android:contentDescription="Minigames" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Magic Minigames"
+                    android:textColor="@color/accent_mint"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pawn Wars and The Hungry Knight ⚔️"
+                    android:textColor="@color/text_muted"
+                    android:textSize="13sp"
+                    android:layout_marginTop="3dp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_arrow_forward"
+                android:contentDescription="Go" />
+        </LinearLayout>
+
+        <!-- Card 3: Friendly Match (Play vs AI) -->
         <LinearLayout
             android:id="@+id/btnMenuPlay"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:background="@drawable/bg_card_rounded"
-            android:padding="20dp"
+            android:padding="16dp"
             android:gravity="center_vertical"
             android:elevation="4dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="12dp"
             android:clickable="true"
             android:focusable="true">
 

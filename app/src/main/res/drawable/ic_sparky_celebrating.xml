@@ -1,0 +1,62 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Party Hat / Sparkle on Antenna -->
+  <path
+      android:strokeColor="#7E57C2"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M24,10 L24,5" />
+  <!-- Party Crown Star -->
+  <path
+      android:fillColor="#FFD54F"
+      android:pathData="M24,0 L26,4 L30,4 L27,7 L28,11 L24,8.5 L20,11 L21,7 L18,4 L22,4 Z" />
+  <!-- Robot Head box -->
+  <path
+      android:fillColor="#B39DDB"
+      android:strokeColor="#5E35B1"
+      android:strokeWidth="2"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M11,10 L37,10 C40,10 42,12 42,15 L42,33 C42,36 40,38 37,38 L11,38 C8,38 6,36 6,33 L6,15 C6,12 8,10 11,10 Z" />
+  <!-- Screen face -->
+  <path
+      android:fillColor="#311B92"
+      android:pathData="M10,14 L38,14 C39.5,14 40,15 40,16.5 L40,31.5 C40,33 39.5,34 38,34 L10,34 C8.5,34 8,33 8,31.5 L8,16.5 C8,15 8.5,14 10,14 Z" />
+  <!-- Joyful curved eyes: ^ ^ -->
+  <path
+      android:strokeColor="#18FFFF"
+      android:strokeWidth="2.8"
+      android:strokeLineCap="round"
+      android:pathData="M13,24 C14.5,20 17.5,20 19,24" />
+  <path
+      android:strokeColor="#18FFFF"
+      android:strokeWidth="2.8"
+      android:strokeLineCap="round"
+      android:pathData="M29,24 C30.5,20 33.5,20 35,24" />
+  <!-- Cheeks -->
+  <path
+      android:fillColor="#FF4081"
+      android:pathData="M11,27 A2.5,2.5 0 1,0 11,32 A2.5,2.5 0 1,0 11,27 Z" />
+  <path
+      android:fillColor="#FF4081"
+      android:pathData="M37,27 A2.5,2.5 0 1,0 37,32 A2.5,2.5 0 1,0 37,27 Z" />
+  <!-- Big happy celebrating open smile with pink tongue -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="1"
+      android:pathData="M19,26 C20,32 28,32 29,26 Z" />
+  <path
+      android:fillColor="#FF80AB"
+      android:pathData="M22,29 C23,31 25,31 26,29 Z" />
+  <!-- Ears / bolts -->
+  <path
+      android:fillColor="#FFD54F"
+      android:pathData="M3,20 L6,20 L6,28 L3,28 Z" />
+  <path
+      android:fillColor="#FFD54F"
+      android:pathData="M42,20 L45,20 L45,28 L42,28 Z" />
+</vector>

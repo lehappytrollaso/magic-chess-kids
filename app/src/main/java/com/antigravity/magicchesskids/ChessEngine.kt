@@ -18,6 +18,12 @@ enum class PieceType(val value: Int) {
     KING(20000)
 }
 
+enum class SparkyDifficulty {
+    TODDLER,   // Apprentice / Toddler: gentle, never captures Queen, frequent mistakes
+    FRIEND,    // Friend: balanced instructional play
+    CHAMPION   // Champion: alert, tactical, avoids blunders
+}
+
 data class Piece(val type: PieceType, val color: PieceColor)
 
 data class Position(val row: Int, val col: Int) {
@@ -533,12 +539,14 @@ class ChessGame {
         return !isCheck(color) && getAllLegalMoves(color).isEmpty()
     }
 
-    fun makeComputerMove(): Move? {
+    // Friendly Kid AI for Black with difficulty scaling
+    fun makeComputerMove(difficulty: SparkyDifficulty = SparkyDifficulty.FRIEND): Move? {
         val legalMoves = getAllLegalMoves(PieceColor.BLACK)
         if (legalMoves.isEmpty()) return null
 
         var bestMove: Move = legalMoves.first()
         var bestScore = Int.MIN_VALUE
+
         val shuffled = legalMoves.shuffled(Random(System.currentTimeMillis()))
 
         for (m in shuffled) {
@@ -546,18 +554,63 @@ class ChessGame {
             val destPiece = board[m.to.row][m.to.col]
             val movingPiece = board[m.from.row][m.from.col] ?: continue
 
-            if (destPiece != null) {
-                score += destPiece.type.value * 10 - movingPiece.type.value
+            when (difficulty) {
+                SparkyDifficulty.TODDLER -> {
+                    // Toddler mode: gentle, forgiving, playful
+                    // Never capture Queen
+                    if (destPiece != null && destPiece.type == PieceType.QUEEN) {
+                        score -= 5000
+                    } else if (destPiece != null) {
+                        score += destPiece.type.value * 2
+                    }
+                    if (movingPiece.type == PieceType.PAWN) {
+                        score += 30
+                    }
+                    score += Random.nextInt(0, 100)
+                }
+
+                SparkyDifficulty.FRIEND -> {
+                    // Friend mode: standard friendly balance
+                    if (destPiece != null) {
+                        score += destPiece.type.value * 10 - movingPiece.type.value
+                    }
+                    val distToCenter = abs(m.to.row - 3.5) + abs(m.to.col - 3.5)
+                    score += ((7.0 - distToCenter) * 3).toInt()
+
+                    if (movingPiece.type == PieceType.PAWN) {
+                        score += m.to.row * 4
+                    }
+                    score += Random.nextInt(0, 15)
+                }
+
+                SparkyDifficulty.CHAMPION -> {
+                    // Champion mode: smart, avoids blunders, seeks checks/captures
+                    if (destPiece != null) {
+                        score += destPiece.type.value * 20 - movingPiece.type.value * 2
+                    }
+                    if (isSquareAttacked(m.to, PieceColor.WHITE)) {
+                        score -= movingPiece.type.value * 4
+                    }
+                    val distToCenter = abs(m.to.row - 3.5) + abs(m.to.col - 3.5)
+                    score += ((7.0 - distToCenter) * 6).toInt()
+
+                    if (m.isPromotion) {
+                        score += 1500
+                    }
+
+                    // Check if move gives check
+                    board[m.to.row][m.to.col] = movingPiece
+                    board[m.from.row][m.from.col] = null
+                    val givesCheck = isCheck(PieceColor.WHITE)
+                    board[m.from.row][m.from.col] = movingPiece
+                    board[m.to.row][m.to.col] = destPiece
+                    if (givesCheck) {
+                        score += 250
+                    }
+
+                    score += Random.nextInt(0, 5)
+                }
             }
-
-            val distToCenter = abs(m.to.row - 3.5) + abs(m.to.col - 3.5)
-            score += ((7.0 - distToCenter) * 3).toInt()
-
-            if (movingPiece.type == PieceType.PAWN) {
-                score += m.to.row * 4
-            }
-
-            score += Random.nextInt(0, 15)
 
             if (score > bestScore) {
                 bestScore = score
@@ -567,6 +620,105 @@ class ChessGame {
 
         makeMove(bestMove)
         return bestMove
+    }
+
+    // --- Minigame 1: Pawn Wars ---
+    fun setupPawnWars() {
+        clearBoard()
+        for (c in 0..7) {
+            board[1][c] = Piece(PieceType.PAWN, PieceColor.BLACK)
+            board[6][c] = Piece(PieceType.PAWN, PieceColor.WHITE)
+        }
+        turn = PieceColor.WHITE
+        whiteCanCastleKingside = false
+        whiteCanCastleQueenside = false
+        blackCanCastleKingside = false
+        blackCanCastleQueenside = false
+        enPassantTarget = null
+        history.clear()
+        capturedByWhite.clear()
+        capturedByBlack.clear()
+    }
+
+    fun checkPawnWarsWinner(): PieceColor? {
+        // First pawn to reach opposite back rank wins
+        for (c in 0..7) {
+            val p0 = board[0][c]
+            if (p0 != null && p0.color == PieceColor.WHITE && p0.type == PieceType.PAWN) return PieceColor.WHITE
+            val p7 = board[7][c]
+            if (p7 != null && p7.color == PieceColor.BLACK && p7.type == PieceType.PAWN) return PieceColor.BLACK
+        }
+        var whitePawns = 0
+        var blackPawns = 0
+        for (r in 0..7) {
+            for (c in 0..7) {
+                val p = board[r][c] ?: continue
+                if (p.type == PieceType.PAWN) {
+                    if (p.color == PieceColor.WHITE) whitePawns++
+                    else blackPawns++
+                }
+            }
+        }
+        if (whitePawns == 0 && blackPawns > 0) return PieceColor.BLACK
+        if (blackPawns == 0 && whitePawns > 0) return PieceColor.WHITE
+
+        // If no legal moves remain for active player
+        val currentMoves = getAllLegalMoves(turn)
+        if (currentMoves.isEmpty()) {
+            return if (whitePawns > blackPawns) PieceColor.WHITE
+            else if (blackPawns > whitePawns) PieceColor.BLACK
+            else PieceColor.WHITE
+        }
+        return null
+    }
+
+    // --- Minigame 2: The Hungry Knight ---
+    data class HungryKnightLevel(
+        val stage: Int,
+        val knightPos: Position,
+        val stars: Set<Position>,
+        val lava: Set<Position>
+    )
+
+    fun setupHungryKnight(stage: Int): HungryKnightLevel {
+        clearBoard()
+        val level = getHungryKnightStage(stage)
+        board[level.knightPos.row][level.knightPos.col] = Piece(PieceType.KNIGHT, PieceColor.WHITE)
+        turn = PieceColor.WHITE
+        whiteCanCastleKingside = false
+        whiteCanCastleQueenside = false
+        blackCanCastleKingside = false
+        blackCanCastleQueenside = false
+        enPassantTarget = null
+        history.clear()
+        capturedByWhite.clear()
+        capturedByBlack.clear()
+        return level
+    }
+
+    companion object {
+        fun getHungryKnightStage(stage: Int): HungryKnightLevel {
+            return when (stage) {
+                1 -> HungryKnightLevel(
+                    stage = 1,
+                    knightPos = Position(7, 1),
+                    stars = setOf(Position(5, 2), Position(3, 3), Position(1, 4)),
+                    lava = setOf(Position(6, 3), Position(4, 1))
+                )
+                2 -> HungryKnightLevel(
+                    stage = 2,
+                    knightPos = Position(7, 6),
+                    stars = setOf(Position(5, 5), Position(3, 4), Position(1, 5), Position(2, 7)),
+                    lava = setOf(Position(5, 7), Position(4, 5), Position(3, 6))
+                )
+                else -> HungryKnightLevel(
+                    stage = 3,
+                    knightPos = Position(4, 4),
+                    stars = setOf(Position(2, 5), Position(3, 7), Position(5, 6), Position(6, 2), Position(2, 3)),
+                    lava = setOf(Position(3, 3), Position(5, 3), Position(2, 4), Position(4, 2), Position(5, 5))
+                )
+            }
+        }
     }
 
     fun getBestHint(): Move? {

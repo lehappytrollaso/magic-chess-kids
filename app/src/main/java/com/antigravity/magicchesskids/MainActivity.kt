@@ -19,17 +19,29 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var tutorialManager: TutorialManager
     private var currentScreen: Screen = Screen.MAIN_MENU
+    private var currentTheme: BoardTheme = BoardTheme.FANTASY
 
     enum class Screen {
         MAIN_MENU,
         TUTORIAL_LEVELS,
         TUTORIAL_PLAYER,
+        MINIGAMES_MENU,
+        PAWN_WARS,
+        HUNGRY_KNIGHT,
         PRACTICE_GAME
+    }
+
+    enum class SparkyMood {
+        NORMAL,
+        THINKING,
+        SURPRISED,
+        CELEBRATING
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         tutorialManager = TutorialManager(this)
+        loadSavedTheme()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -37,12 +49,80 @@ class MainActivity : AppCompatActivity() {
                     Screen.MAIN_MENU -> finish()
                     Screen.TUTORIAL_LEVELS -> showMainMenu()
                     Screen.TUTORIAL_PLAYER -> showTutorialLevels()
+                    Screen.MINIGAMES_MENU -> showMainMenu()
+                    Screen.PAWN_WARS -> showMinigamesMenu()
+                    Screen.HUNGRY_KNIGHT -> showMinigamesMenu()
                     Screen.PRACTICE_GAME -> showMainMenu()
                 }
             }
         })
 
         showMainMenu()
+    }
+
+    // ==========================================
+    // THEMES & PERSISTENCE
+    // ==========================================
+    private fun loadSavedTheme() {
+        val prefs = getSharedPreferences("magic_chess_prefs", MODE_PRIVATE)
+        val themeName = prefs.getString("theme_name", BoardTheme.FANTASY.name) ?: BoardTheme.FANTASY.name
+        currentTheme = try {
+            BoardTheme.valueOf(themeName)
+        } catch (_: Exception) {
+            BoardTheme.FANTASY
+        }
+    }
+
+    private fun saveTheme(theme: BoardTheme) {
+        currentTheme = theme
+        getSharedPreferences("magic_chess_prefs", MODE_PRIVATE)
+            .edit()
+            .putString("theme_name", theme.name)
+            .apply()
+    }
+
+    private fun showThemeSelectorDialog(onThemeChanged: () -> Unit) {
+        val dialog = Dialog(this)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_theme_selector)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        fun applyTheme(theme: BoardTheme) {
+            saveTheme(theme)
+            SoundEffects.playPop(this)
+            onThemeChanged()
+            dialog.dismiss()
+        }
+
+        dialog.findViewById<View>(R.id.btnThemeFantasy).setOnClickListener { applyTheme(BoardTheme.FANTASY) }
+        dialog.findViewById<View>(R.id.btnThemeForest).setOnClickListener { applyTheme(BoardTheme.FOREST) }
+        dialog.findViewById<View>(R.id.btnThemeIce).setOnClickListener { applyTheme(BoardTheme.ICE) }
+        dialog.findViewById<View>(R.id.btnThemeCandy).setOnClickListener { applyTheme(BoardTheme.CANDY) }
+        dialog.findViewById<View>(R.id.btnThemeClose).setOnClickListener { dialog.dismiss() }
+
+        dialog.show()
+    }
+
+    private fun setSparkyMood(imageView: ImageView?, mood: SparkyMood) {
+        if (imageView == null) return
+        val resId = when (mood) {
+            SparkyMood.NORMAL -> R.drawable.ic_robot_sparky
+            SparkyMood.THINKING -> R.drawable.ic_sparky_thinking
+            SparkyMood.SURPRISED -> R.drawable.ic_sparky_surprised
+            SparkyMood.CELEBRATING -> R.drawable.ic_sparky_celebrating
+        }
+        imageView.setImageResource(resId)
+        imageView.animate()
+            .scaleX(1.15f)
+            .scaleY(1.15f)
+            .setDuration(120)
+            .withEndAction {
+                imageView.animate().scaleX(1.0f).scaleY(1.0f).setDuration(120).start()
+            }.start()
     }
 
     // ==========================================
@@ -54,7 +134,9 @@ class MainActivity : AppCompatActivity() {
 
         val tvStars = findViewById<TextView>(R.id.tvTotalStars)
         val btnSound = findViewById<ImageView>(R.id.btnSoundToggle)
+        val btnTheme = findViewById<ImageView>(R.id.btnThemeToggle)
         val btnTutorial = findViewById<View>(R.id.btnMenuTutorial)
+        val btnMinigames = findViewById<View>(R.id.btnMenuMinigames)
         val btnPlay = findViewById<View>(R.id.btnMenuPlay)
 
         val totalStars = tutorialManager.getTotalStars()
@@ -65,16 +147,27 @@ class MainActivity : AppCompatActivity() {
         btnSound.setOnClickListener {
             SoundEffects.isMuted = !SoundEffects.isMuted
             updateSoundIcon(btnSound)
-            if (!SoundEffects.isMuted) SoundEffects.playPop()
+            if (!SoundEffects.isMuted) SoundEffects.playPop(this)
+        }
+
+        btnTheme.setOnClickListener {
+            showThemeSelectorDialog {
+                // Theme updated
+            }
         }
 
         btnTutorial.setOnClickListener {
-            SoundEffects.playPop()
+            SoundEffects.playPop(this)
             showTutorialLevels()
         }
 
+        btnMinigames.setOnClickListener {
+            SoundEffects.playPop(this)
+            showMinigamesMenu()
+        }
+
         btnPlay.setOnClickListener {
-            SoundEffects.playPop()
+            SoundEffects.playPop(this)
             startPracticeGame()
         }
     }
@@ -144,6 +237,7 @@ class MainActivity : AppCompatActivity() {
         val tvStepCount = findViewById<TextView>(R.id.tvTutorialStepCount)
         val tvInstruction = findViewById<TextView>(R.id.tvTutorialInstruction)
         val boardView = findViewById<ChessBoardView>(R.id.chessBoardTutorial)
+        boardView.currentTheme = currentTheme
         val containerTools = findViewById<View>(R.id.containerTutorialTools)
         val btnHint = findViewById<View>(R.id.btnTutorialHint)
         val btnRestart = findViewById<View>(R.id.btnTutorialRestart)
@@ -398,27 +492,72 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ==========================================
-    // 4. FRIENDLY PRACTICE GAME
+    // 4. MINIGAMES (Pawn Wars & The Hungry Knight)
     // ==========================================
-    private fun startPracticeGame() {
-        currentScreen = Screen.PRACTICE_GAME
-        setContentView(R.layout.layout_practice_game)
+    private fun showMinigamesMenu() {
+        currentScreen = Screen.MINIGAMES_MENU
+        setContentView(R.layout.layout_minigames)
 
-        val boardView = findViewById<ChessBoardView>(R.id.chessBoardGame)
-        val tvSparky = findViewById<TextView>(R.id.tvSparkyMessage)
-        val tvStatus = findViewById<TextView>(R.id.tvPlayerStatus)
-        val tvCapWhite = findViewById<TextView>(R.id.tvCapturedByWhite)
-        val tvCapBlack = findViewById<TextView>(R.id.tvCapturedByBlack)
-        val btnHint = findViewById<View>(R.id.btnGameHint)
-        val btnUndo = findViewById<View>(R.id.btnGameUndo)
-        val btnRestart = findViewById<ImageView>(R.id.btnGameRestart)
-        val btnBack = findViewById<ImageView>(R.id.btnGameBack)
-        val btnSound = findViewById<ImageView>(R.id.btnGameSound)
+        val btnBack = findViewById<ImageView>(R.id.btnMinigamesBack)
+        val btnTheme = findViewById<ImageView>(R.id.btnMinigamesTheme)
+        val btnSound = findViewById<ImageView>(R.id.btnMinigamesSound)
+        val btnPawnWars = findViewById<View>(R.id.btnMinigamePawnWars)
+        val btnHungryKnight = findViewById<View>(R.id.btnMinigameHungryKnight)
 
         updateSoundIcon(btnSound)
         btnSound.setOnClickListener {
             SoundEffects.isMuted = !SoundEffects.isMuted
             updateSoundIcon(btnSound)
+            if (!SoundEffects.isMuted) SoundEffects.playPop(this)
+        }
+
+        btnTheme.setOnClickListener {
+            showThemeSelectorDialog {
+                // Theme updated
+            }
+        }
+
+        btnBack.setOnClickListener {
+            SoundEffects.playPop(this)
+            showMainMenu()
+        }
+
+        btnPawnWars.setOnClickListener {
+            SoundEffects.playPop(this)
+            startPawnWars()
+        }
+
+        btnHungryKnight.setOnClickListener {
+            SoundEffects.playPop(this)
+            startHungryKnight()
+        }
+    }
+
+    private fun startPawnWars() {
+        currentScreen = Screen.PAWN_WARS
+        setContentView(R.layout.layout_pawn_wars)
+
+        val boardView = findViewById<ChessBoardView>(R.id.chessBoardPawnWars)
+        boardView.currentTheme = currentTheme
+        val ivSparky = findViewById<ImageView>(R.id.ivPawnWarsSparky)
+        val tvMessage = findViewById<TextView>(R.id.tvPawnWarsMessage)
+        val btnBack = findViewById<ImageView>(R.id.btnPawnWarsBack)
+        val btnRestart = findViewById<ImageView>(R.id.btnPawnWarsRestart)
+        val btnTheme = findViewById<ImageView>(R.id.btnPawnWarsTheme)
+        val btnSound = findViewById<ImageView>(R.id.btnPawnWarsSound)
+        val btnHint = findViewById<View>(R.id.btnPawnWarsHint)
+        val btnUndo = findViewById<View>(R.id.btnPawnWarsUndo)
+
+        updateSoundIcon(btnSound)
+        btnSound.setOnClickListener {
+            SoundEffects.isMuted = !SoundEffects.isMuted
+            updateSoundIcon(btnSound)
+        }
+
+        btnTheme.setOnClickListener {
+            showThemeSelectorDialog {
+                boardView.currentTheme = currentTheme
+            }
         }
 
         var isComputerThinking = false
@@ -428,7 +567,319 @@ class MainActivity : AppCompatActivity() {
             computerRunnable?.let { boardView.removeCallbacks(it) }
             computerRunnable = null
             isComputerThinking = false
-            SoundEffects.playPop()
+            SoundEffects.playPop(this)
+            showMinigamesMenu()
+        }
+
+        val game = ChessGame()
+        game.setupPawnWars()
+        boardView.setGame(game)
+        boardView.isInteractive = true
+        boardView.onSchemeTapListener = null
+        boardView.onPendingResetTapListener = null
+
+        fun checkPawnWarsEnd(): Boolean {
+            val winner = game.checkPawnWarsWinner()
+            if (winner != null) {
+                boardView.isInteractive = false
+                if (winner == PieceColor.WHITE) {
+                    boardView.triggerConfetti()
+                    SoundEffects.playVictory(this)
+                    setSparkyMood(ivSparky, SparkyMood.CELEBRATING)
+                    tvMessage.text = "PAWN WARS CHAMPION! 🏆 Your pawn crossed the board!"
+                } else {
+                    SoundEffects.playInvalid(this)
+                    setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+                    tvMessage.text = "Sparky made it first! Great try, you'll win next time! ✨"
+                }
+                return true
+            }
+            return false
+        }
+
+        fun playSparkyPawnMove() {
+            isComputerThinking = true
+            boardView.isInteractive = false
+            setSparkyMood(ivSparky, SparkyMood.THINKING)
+            tvMessage.text = "Sparky is thinking about his pawn move... 🤔"
+
+            val r = Runnable {
+                isComputerThinking = false
+                val move = game.makeComputerMove(SparkyDifficulty.FRIEND)
+                boardView.isInteractive = true
+                if (move != null) {
+                    SoundEffects.playMove(this)
+                    setSparkyMood(ivSparky, SparkyMood.NORMAL)
+                    tvMessage.text = "Your turn! Charge forward to glory! ✨"
+                    checkPawnWarsEnd()
+                }
+            }
+            computerRunnable = r
+            boardView.postDelayed(r, 600)
+        }
+
+        boardView.onUserMoveListener = { from, to ->
+            val moved = game.makeMove(Move(from, to))
+            if (moved) {
+                SoundEffects.playMove(this)
+                val isGameOver = checkPawnWarsEnd()
+                if (!isGameOver) {
+                    playSparkyPawnMove()
+                }
+            }
+        }
+
+        boardView.onEnemyPieceTappedListener = {
+            setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+            tvMessage.text = "That pawn belongs to Sparky! Tap your white pawns 🛡️"
+            SoundEffects.playPop(this)
+        }
+
+        boardView.onIllegalMoveListener = {
+            tvMessage.text = "Invalid square! Pawns advance 1 step or capture diagonally ♟️"
+        }
+
+        btnRestart.setOnClickListener {
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
+            SoundEffects.playPop(this)
+            game.setupPawnWars()
+            boardView.setGame(game)
+            boardView.hintMove = null
+            boardView.isInteractive = true
+            setSparkyMood(ivSparky, SparkyMood.NORMAL)
+            tvMessage.text = "New Pawn Wars! First pawn across the board wins! 🛡️"
+        }
+
+        btnHint.setOnClickListener {
+            if (isComputerThinking) return@setOnClickListener
+            val hint = game.getBestHint()
+            if (hint != null) {
+                boardView.hintMove = hint
+                boardView.invalidate()
+                SoundEffects.playHint(this)
+                tvMessage.text = "Hint! Advance from ${hint.from.toChessNotation()} to ${hint.to.toChessNotation()} 💡"
+            }
+        }
+
+        btnUndo.setOnClickListener {
+            if (isComputerThinking) return@setOnClickListener
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
+            if (game.undo()) {
+                if (game.turn == PieceColor.BLACK) game.undo()
+                boardView.hintMove = null
+                boardView.selectSquare(null)
+                boardView.isInteractive = true
+                boardView.invalidate()
+                SoundEffects.playPop(this)
+                tvMessage.text = "Move undone! Choose carefully 💭"
+            }
+        }
+    }
+
+    private fun startHungryKnight() {
+        currentScreen = Screen.HUNGRY_KNIGHT
+        setContentView(R.layout.layout_hungry_knight)
+
+        val boardView = findViewById<ChessBoardView>(R.id.chessBoardHungryKnight)
+        boardView.currentTheme = currentTheme
+        val ivSparky = findViewById<ImageView>(R.id.ivHungryKnightSparky)
+        val tvStage = findViewById<TextView>(R.id.tvHungryKnightStage)
+        val tvMessage = findViewById<TextView>(R.id.tvHungryKnightMessage)
+        val btnBack = findViewById<ImageView>(R.id.btnHungryKnightBack)
+        val btnRestart = findViewById<ImageView>(R.id.btnHungryKnightRestart)
+        val btnTheme = findViewById<ImageView>(R.id.btnHungryKnightTheme)
+        val btnSound = findViewById<ImageView>(R.id.btnHungryKnightSound)
+        val btnAction = findViewById<Button>(R.id.btnHungryKnightAction)
+
+        var currentStage = 1
+        val maxStages = 3
+        val game = ChessGame()
+
+        updateSoundIcon(btnSound)
+        btnSound.setOnClickListener {
+            SoundEffects.isMuted = !SoundEffects.isMuted
+            updateSoundIcon(btnSound)
+        }
+
+        btnTheme.setOnClickListener {
+            showThemeSelectorDialog {
+                boardView.currentTheme = currentTheme
+            }
+        }
+
+        btnBack.setOnClickListener {
+            SoundEffects.playPop(this)
+            showMinigamesMenu()
+        }
+
+        fun loadStage(stage: Int) {
+            btnAction.visibility = View.GONE
+            val level = game.setupHungryKnight(stage)
+            tvStage.text = "Level $stage of $maxStages"
+            boardView.setGame(game)
+            boardView.tutorialTargetPositions = level.stars.toMutableSet()
+            boardView.lavaPositions = level.lava.toMutableSet()
+            boardView.isInteractive = true
+            setSparkyMood(ivSparky, SparkyMood.NORMAL)
+            tvMessage.text = when (stage) {
+                1 -> "L-jump with the knight! Eat 3 golden stars ⭐ and avoid burning lava! 🔥"
+                2 -> "More stars and lava traps! Plan your magical L-jumps 🦄✨"
+                else -> "The grand feast! Collect all stars in the maze without touching the fire! 🌟"
+            }
+        }
+
+        boardView.onUserMoveListener = { from, to ->
+            if (boardView.lavaPositions.contains(to)) {
+                SoundEffects.playInvalid(this)
+                setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+                tvMessage.text = "WATCH OUT! That's burning lava! 🔥 Choose a safe square"
+            } else {
+                val moved = game.makeMove(Move(from, to))
+                if (moved) {
+                    if (boardView.tutorialTargetPositions.contains(to)) {
+                        boardView.tutorialTargetPositions = boardView.tutorialTargetPositions - to
+                        boardView.invalidate()
+                        SoundEffects.playStarCollect(this)
+                        setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+
+                        val remaining = boardView.tutorialTargetPositions.size
+                        if (remaining > 0) {
+                            tvMessage.text = "Star collected! Nom nom ⭐ $remaining stars left!"
+                        } else {
+                            boardView.isInteractive = false
+                            boardView.triggerConfetti()
+                            SoundEffects.playVictory(this)
+                            setSparkyMood(ivSparky, SparkyMood.CELEBRATING)
+
+                            if (currentStage < maxStages) {
+                                tvMessage.text = "Level $currentStage complete! You're an expert jumper! 🦄🎉"
+                                btnAction.text = "Next Level! ➡️"
+                                btnAction.visibility = View.VISIBLE
+                                btnAction.setOnClickListener {
+                                    SoundEffects.playPop(this)
+                                    currentStage++
+                                    loadStage(currentStage)
+                                }
+                            } else {
+                                tvMessage.text = "FEAST COMPLETE! You ate all the stars in the kingdom! 👑🌟"
+                                btnAction.text = "Play Again! 🔄"
+                                btnAction.visibility = View.VISIBLE
+                                btnAction.setOnClickListener {
+                                    SoundEffects.playPop(this)
+                                    currentStage = 1
+                                    loadStage(currentStage)
+                                }
+                            }
+                        }
+                    } else {
+                        SoundEffects.playMove(this)
+                        tvMessage.text = "Great jump! Now seek the next star ⭐"
+                    }
+                }
+            }
+        }
+
+        boardView.onIllegalMoveListener = {
+            SoundEffects.playInvalid(this)
+            tvMessage.text = "The knight jumps in an 'L' shape! 2 straight steps and 1 to the side 🦄"
+        }
+
+        btnRestart.setOnClickListener {
+            SoundEffects.playPop(this)
+            loadStage(currentStage)
+        }
+
+        loadStage(currentStage)
+    }
+
+    // ==========================================
+    // 5. FRIENDLY PRACTICE GAME
+    // ==========================================
+    private fun startPracticeGame() {
+        currentScreen = Screen.PRACTICE_GAME
+        setContentView(R.layout.layout_practice_game)
+
+        val boardView = findViewById<ChessBoardView>(R.id.chessBoardGame)
+        boardView.currentTheme = currentTheme
+        val ivSparky = findViewById<ImageView>(R.id.ivSparkyAvatar)
+        val tvSparky = findViewById<TextView>(R.id.tvSparkyMessage)
+        val tvStatus = findViewById<TextView>(R.id.tvPlayerStatus)
+        val tvCapWhite = findViewById<TextView>(R.id.tvCapturedByWhite)
+        val tvCapBlack = findViewById<TextView>(R.id.tvCapturedByBlack)
+        val btnHint = findViewById<View>(R.id.btnGameHint)
+        val btnUndo = findViewById<View>(R.id.btnGameUndo)
+        val btnRestart = findViewById<ImageView>(R.id.btnGameRestart)
+        val btnTheme = findViewById<ImageView>(R.id.btnGameTheme)
+        val btnBack = findViewById<ImageView>(R.id.btnGameBack)
+        val btnSound = findViewById<ImageView>(R.id.btnGameSound)
+
+        val btnDiffToddler = findViewById<TextView>(R.id.btnDiffToddler)
+        val btnDiffFriend = findViewById<TextView>(R.id.btnDiffFriend)
+        val btnDiffChampion = findViewById<TextView>(R.id.btnDiffChampion)
+
+        var currentDifficulty = SparkyDifficulty.TODDLER
+
+        fun updateDifficultyUI() {
+            btnDiffToddler.setBackgroundResource(if (currentDifficulty == SparkyDifficulty.TODDLER) R.drawable.bg_pill_selected else R.drawable.bg_pill_unselected)
+            btnDiffToddler.setTextColor(if (currentDifficulty == SparkyDifficulty.TODDLER) Color.WHITE else Color.parseColor("#49454F"))
+
+            btnDiffFriend.setBackgroundResource(if (currentDifficulty == SparkyDifficulty.FRIEND) R.drawable.bg_pill_selected else R.drawable.bg_pill_unselected)
+            btnDiffFriend.setTextColor(if (currentDifficulty == SparkyDifficulty.FRIEND) Color.WHITE else Color.parseColor("#49454F"))
+
+            btnDiffChampion.setBackgroundResource(if (currentDifficulty == SparkyDifficulty.CHAMPION) R.drawable.bg_pill_selected else R.drawable.bg_pill_unselected)
+            btnDiffChampion.setTextColor(if (currentDifficulty == SparkyDifficulty.CHAMPION) Color.WHITE else Color.parseColor("#49454F"))
+        }
+
+        updateDifficultyUI()
+
+        btnDiffToddler.setOnClickListener {
+            currentDifficulty = SparkyDifficulty.TODDLER
+            updateDifficultyUI()
+            SoundEffects.playPop(this)
+            setSparkyMood(ivSparky, SparkyMood.NORMAL)
+            tvSparky.text = "Toddler mode! We'll play super gentle and fun 😊"
+        }
+
+        btnDiffFriend.setOnClickListener {
+            currentDifficulty = SparkyDifficulty.FRIEND
+            updateDifficultyUI()
+            SoundEffects.playPop(this)
+            setSparkyMood(ivSparky, SparkyMood.NORMAL)
+            tvSparky.text = "Friend mode! I'll help you learn great moves ✨"
+        }
+
+        btnDiffChampion.setOnClickListener {
+            currentDifficulty = SparkyDifficulty.CHAMPION
+            updateDifficultyUI()
+            SoundEffects.playPop(this)
+            setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+            tvSparky.text = "Champion mode! Let's see if you can checkmate me! 🏆"
+        }
+
+        updateSoundIcon(btnSound)
+        btnSound.setOnClickListener {
+            SoundEffects.isMuted = !SoundEffects.isMuted
+            updateSoundIcon(btnSound)
+        }
+
+        btnTheme.setOnClickListener {
+            showThemeSelectorDialog {
+                boardView.currentTheme = currentTheme
+            }
+        }
+
+        var isComputerThinking = false
+        var computerRunnable: Runnable? = null
+
+        btnBack.setOnClickListener {
+            computerRunnable?.let { boardView.removeCallbacks(it) }
+            computerRunnable = null
+            isComputerThinking = false
+            SoundEffects.playPop(this)
             showMainMenu()
         }
 
@@ -438,9 +889,10 @@ class MainActivity : AppCompatActivity() {
         boardView.onSchemeTapListener = null
         boardView.onPendingResetTapListener = null
         boardView.onEnemyPieceTappedListener = {
+            setSparkyMood(ivSparky, SparkyMood.SURPRISED)
             tvSparky.text = "That piece belongs to Sparky! Tap your white pieces ✨"
             tvStatus.text = "Move your white pieces! ✨"
-            SoundEffects.playPop()
+            SoundEffects.playPop(this)
         }
         boardView.onIllegalMoveListener = {
             tvStatus.text = "That square is not valid! Tap the green dots or shield 🛡️"
@@ -467,7 +919,8 @@ class MainActivity : AppCompatActivity() {
             if (game.isCheckmate(PieceColor.BLACK)) {
                 boardView.isInteractive = false
                 boardView.triggerConfetti()
-                SoundEffects.playVictory()
+                SoundEffects.playVictory(this)
+                setSparkyMood(ivSparky, SparkyMood.CELEBRATING)
                 tvSparky.text = "Congratulations!!! You won! 🏆"
                 tvStatus.text = "CHECKMATE! You are the champion! 🎉"
                 showVictoryGameDialog(playerWon = true)
@@ -476,6 +929,7 @@ class MainActivity : AppCompatActivity() {
 
             if (game.isCheckmate(PieceColor.WHITE)) {
                 boardView.isInteractive = false
+                setSparkyMood(ivSparky, SparkyMood.NORMAL)
                 tvSparky.text = "Great try! You almost had me! 🤝"
                 tvStatus.text = "Checkmate! You'll get it next time! ✨"
                 showVictoryGameDialog(playerWon = false)
@@ -484,6 +938,7 @@ class MainActivity : AppCompatActivity() {
 
             if (game.isStalemate(PieceColor.WHITE) || game.isStalemate(PieceColor.BLACK)) {
                 boardView.isInteractive = false
+                setSparkyMood(ivSparky, SparkyMood.NORMAL)
                 tvSparky.text = "Magical Draw! Well played 🤝"
                 tvStatus.text = "Stalemate, draw! 🕊️"
                 return true
@@ -492,7 +947,8 @@ class MainActivity : AppCompatActivity() {
             if (game.isCheck(PieceColor.WHITE)) {
                 tvStatus.text = "Watch out! Your King is in Check ⚠️"
                 tvStatus.setTextColor(Color.parseColor("#FF5252"))
-                SoundEffects.playInvalid()
+                SoundEffects.playInvalid(this)
+                setSparkyMood(ivSparky, SparkyMood.SURPRISED)
             } else {
                 tvStatus.text = "It's your turn! Tap a piece to move ✨"
                 tvStatus.setTextColor(ContextCompat.getColor(this, R.color.accent_mint))
@@ -504,15 +960,17 @@ class MainActivity : AppCompatActivity() {
         fun playComputerTurn() {
             isComputerThinking = true
             boardView.isInteractive = false
+            setSparkyMood(ivSparky, SparkyMood.THINKING)
             tvSparky.text = "Sparky is thinking... 🤔"
 
             val r = Runnable {
                 isComputerThinking = false
-                val move = game.makeComputerMove()
+                val move = game.makeComputerMove(currentDifficulty)
                 boardView.isInteractive = true
                 if (move != null) {
-                    SoundEffects.playMove()
+                    SoundEffects.playMove(this)
                     updateCapturedDisplay()
+                    setSparkyMood(ivSparky, SparkyMood.NORMAL)
                     val phrases = arrayOf(
                         "All set! Now it's your turn 🤖",
                         "Nice move! Let's see what you do next ✨",
@@ -528,9 +986,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         fun handlePlayerMove(from: Position, to: Position, promoteTo: PieceType = PieceType.QUEEN) {
+            val destPiece = game.getPiece(to)
             val moved = game.makeMove(Move(from, to), promoteTo = promoteTo)
             if (moved) {
-                SoundEffects.playMove()
+                if (destPiece != null) {
+                    SoundEffects.playCapture(this)
+                    setSparkyMood(ivSparky, SparkyMood.SURPRISED)
+                } else {
+                    SoundEffects.playMove(this)
+                }
                 updateCapturedDisplay()
                 val gameOver = checkGameStatus()
                 if (!gameOver) {
@@ -550,6 +1014,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Hint 💡
         btnHint.setOnClickListener {
             if (isComputerThinking) return@setOnClickListener
             if (game.turn == PieceColor.WHITE) {
@@ -557,12 +1022,13 @@ class MainActivity : AppCompatActivity() {
                 if (hint != null) {
                     boardView.hintMove = hint
                     boardView.invalidate()
-                    SoundEffects.playHint()
+                    SoundEffects.playHint(this)
                     tvSparky.text = "Hint! Try moving from ${hint.from.toChessNotation()} to ${hint.to.toChessNotation()} 💡"
                 }
             }
         }
 
+        // Undo ↩️
         btnUndo.setOnClickListener {
             if (isComputerThinking) return@setOnClickListener
             computerRunnable?.let { boardView.removeCallbacks(it) }
@@ -579,22 +1045,25 @@ class MainActivity : AppCompatActivity() {
                 boardView.isInteractive = true
                 boardView.invalidate()
                 updateCapturedDisplay()
-                SoundEffects.playPop()
+                SoundEffects.playPop(this)
+                setSparkyMood(ivSparky, SparkyMood.NORMAL)
                 tvSparky.text = "Move undone! Take your time 💭"
                 checkGameStatus()
             }
         }
 
+        // Restart 🔄
         btnRestart.setOnClickListener {
             computerRunnable?.let { boardView.removeCallbacks(it) }
             computerRunnable = null
             isComputerThinking = false
-            SoundEffects.playPop()
+            SoundEffects.playPop(this)
             game.resetToStandard()
             boardView.setGame(game)
             boardView.hintMove = null
             boardView.isInteractive = true
             updateCapturedDisplay()
+            setSparkyMood(ivSparky, SparkyMood.NORMAL)
             tvSparky.text = "New match! Let's have fun! 🎉"
             tvStatus.text = "It's your turn! Tap a piece to move"
         }
