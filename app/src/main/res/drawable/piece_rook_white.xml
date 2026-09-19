@@ -1,0 +1,39 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- White Rook -->
+  <!-- Base shadow -->
+  <path
+      android:fillColor="#E0D7EC"
+      android:pathData="M13,42 L35,42 C36.5,42 37,40.5 36,39 L34,36 L14,36 L12,39 C11,40.5 11.5,42 13,42 Z" />
+  <!-- Base plate -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:strokeColor="#3C2A4D"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M12,40 C12,40 17,38.5 24,38.5 C31,38.5 36,40 36,40 C36.8,40 37.5,39 37,38 L35,35 L13,35 L11,38 C10.5,39 11.2,40 12,40 Z" />
+  <!-- Tower Body -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:strokeColor="#3C2A4D"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M15,35 L17,19 L31,19 L33,35 Z" />
+  <!-- Upper castle battlements rim -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:strokeColor="#3C2A4D"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M14,19 L14,9 L18,9 L18,13 L22,13 L22,9 L26,9 L26,13 L30,13 L30,9 L34,9 L34,19 Z" />
+  <!-- Castle window slit -->
+  <path
+      android:fillColor="#3C2A4D"
+      android:pathData="M22.5,23 C22.5,22.2 23.2,21.5 24,21.5 C24.8,21.5 25.5,22.2 25.5,23 L25.5,28 C25.5,28.8 24.8,29.5 24,29.5 C23.2,29.5 22.5,28.8 22.5,28 Z" />
+</vector>

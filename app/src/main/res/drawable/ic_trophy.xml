@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Trophy Cup -->
+  <path
+      android:fillColor="#FFD54F"
+      android:strokeColor="#FFA000"
+      android:strokeWidth="1.5"
+      android:pathData="M14,6 L34,6 L34,18 C34,24 29.5,28 24,28 C18.5,28 14,24 14,18 Z" />
+  <!-- Left handle -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#FFA000"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M14,10 C9,10 8,17 14,21" />
+  <!-- Right handle -->
+  <path
+      android:fillColor="#00000000"
+      android:strokeColor="#FFA000"
+      android:strokeWidth="2.5"
+      android:strokeLineCap="round"
+      android:pathData="M34,10 C39,10 40,17 34,21" />
+  <!-- Stem -->
+  <path
+      android:fillColor="#FFA000"
+      android:pathData="M22,28 L26,28 L26,36 L22,36 Z" />
+  <!-- Base -->
+  <path
+      android:fillColor="#FFB300"
+      android:strokeColor="#FF8F00"
+      android:strokeWidth="1.5"
+      android:pathData="M16,36 L32,36 L34,42 L14,42 Z" />
+  <!-- Star on Cup -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M24,12 L25.5,15.5 L29,16 L26.5,18.5 L27,22 L24,20 L21,22 L21.5,18.5 L19,16 L22.5,15.5 Z" />
+</vector>

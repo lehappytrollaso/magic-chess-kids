@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magic Chess - Native Android APK (English Edition)</title>
+  <style>
+    :root {
+      --primary: #7E57C2;
+      --primary-dark: #5E35B1;
+      --accent-pink: #FF6584;
+      --accent-gold: #FFA000;
+      --accent-mint: #26A69A;
+      --bg: #F8F9FE;
+      --card-bg: #FFFFFF;
+      --text-main: #2C2738;
+      --text-muted: #6B6578;
+      --border: #E8E2F2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding: 16px;
+    }
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      padding: 0 20px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 8px rgba(126,87,194,0.08);
+      margin-bottom: 16px;
+    }
+    .header-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-apk { background: #EDE7F6; color: var(--primary-dark); }
+    .badge-success { background: #E8F5E9; color: #2E7D32; }
+    .badge-kids { background: #FCE4EC; color: #C2185B; }
+    .badge-vector { background: #FFF8E1; color: #F57F17; }
+
+    .grid-kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .kpi-label { font-size: 0.8rem; color: var(--text-muted); }
+    .kpi-value { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-top: 2px; }
+
+    .main-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    }
+    h2 { font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+    .install-box {
+      background: #2C2738;
+      color: #F8F9FE;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    .pieces-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .piece-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #FAFAFF;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .piece-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+    .piece-icon {
+      font-size: 1.6rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #EDE7F6;
+      border-radius: 10px;
+    }
+    .piece-scheme {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .piece-tag {
+      display: inline-block;
+      align-self: flex-start;
+      background: #FFF9C4;
+      color: #795548;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.88rem;
+    }
+    th, td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    th { background: #F3E5F5; color: var(--primary-dark); font-weight: 600; }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(45deg, #7E57C2, #9C27B0);
+      color: #FFFFFF;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(126,87,194,0.3);
+      transition: transform 0.1s ease;
+    }
+    .btn-download:hover { transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+  <!-- Ultra-Compact Header (< 70px) -->
+  <div class="header-bar">
+    <div class="header-title">
+      <span>👑</span> Magic Chess - Native Android APK (English Edition)
+    </div>
+    <div class="badge-group">
+      <span class="badge badge-apk">APK 5.7 MB</span>
+      <span class="badge badge-success">Target SDK 34</span>
+      <span class="badge badge-kids">Young Child (Ages 4-9)</span>
+      <span class="badge badge-vector">Staunton Vectors (No AI Slop)</span>
+    </div>
+  </div>
+
+  <!-- Key Metrics KPIs -->
+  <div class="grid-kpis">
+    <div class="kpi-card">
+      <span class="kpi-label">Generated APK Location</span>
+      <span class="kpi-value" style="font-size:0.95rem; word-break:break-all;">~/antigravity/magic-chess-kids/MagicChessKids.apk</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Language & Architecture</span>
+      <span class="kpi-value">Kotlin 2.0 / Hardware 60fps</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Guided Tutorial Levels</span>
+      <span class="kpi-value">7 Levels with Schemes ⭐</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-label">Sparky AI & Assistance</span>
+      <span class="kpi-value">Hints 💡 + Undo ↩️</span>
+    </div>
+  </div>
+
+  <!-- Section 1: Download & Install -->
+  <div class="main-card">
+    <h2><span>🚀</span> Instant Installation on Android Device or Emulator</h2>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">
+      Standalone signed debug <code>.apk</code> package for Android 7.0 (API 24) through Android 14/15 (API 34+). Can run side-by-side with the Spanish edition without package name collision.
+    </p>
+    <a class="btn-download" href="file:///home/josel/antigravity/magic-chess-kids/MagicChessKids.apk">
+      📦 Open / Copy APK File (5.7 MB)
+    </a>
+
+    <div style="margin-top: 14px;">
+      <div style="font-weight: 600; font-size: 0.85rem; color: var(--primary-dark);">ADB Command to install:</div>
+      <div class="install-box">
+        adb install -r /home/josel/antigravity/magic-chess-kids/MagicChessKids.apk
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Piece by Piece Tutorial -->
+  <div class="main-card">
+    <h2><span>📚</span> Step-by-step Visual Tutorial with Schemes and Minimal Text</h2>
+    <p style="font-size: 0.9rem; color: var(--text-muted);">
+      Tailored specifically for young children: zero walls of boring text, 1-sentence explanations, visual radiating arrows, and interactive star-collecting mini-challenges ⭐.
+    </p>
+
+    <div class="pieces-grid">
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🛡️</div>
+          <div>1. The Little Pawn</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> 1 step forward. 2-square initial jump from home rank. Diagonal capture nibble.
+        </div>
+        <span class="piece-tag">Challenges: Forward step ⭐, First jump ⭐⭐, Diagonal capture ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🏰</div>
+          <div>2. The Castle Tower (Rook)</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Flies in straight cross (+) lines: up, down, left, and right along castle walls.
+        </div>
+        <span class="piece-tag">Challenges: Straight forward ⭐, Lateral flight ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🐴</div>
+          <div>3. The Jumping Knight</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Magic L-shape leap (2 straight, 1 to side). Leaps over other pieces!
+        </div>
+        <span class="piece-tag">Challenges: L-hop ⭐, Leap over pawns ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🧙‍♂️</div>
+          <div>4. The Forest Bishop</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Diagonal slide (X). Stays forever on its birth square color!
+        </div>
+        <span class="piece-tag">Challenges: Diagonal slide ⭐, Cross the board ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">👑</div>
+          <div>5. The Mighty Queen</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Superpower of Rook + Bishop. Flies straight and diagonally anywhere.
+        </div>
+        <span class="piece-tag">Challenges: Diagonal flight ⭐, Kingdom rescue ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🤴</div>
+          <div>6. The Wise King</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Moves 1 gentle step in any direction. The royal heart to protect!
+        </div>
+        <span class="piece-tag">Challenges: Careful step ⭐, Diagonal retreat ⭐⭐⭐</span>
+      </div>
+
+      <div class="piece-card">
+        <div class="piece-header">
+          <div class="piece-icon">🎯</div>
+          <div>7. Check and Checkmate!</div>
+        </div>
+        <div class="piece-scheme">
+          <b>Visual Scheme:</b> Check = "Watch out, King!". Checkmate = "King trapped, we win the match!".
+        </div>
+        <span class="piece-tag">Challenges: Deliver Check ⭐, Grand Checkmate 🏆🎉</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Friendly Match vs Sparky -->
+  <div class="main-card">
+    <h2><span>🎮</span> Friendly Match vs Sparky the Robot Companion</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Assistance Tool</th>
+          <th>Screen Behavior</th>
+          <th>Child Learning Benefit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Move Dots & Rings</b></td>
+          <td>Allowed destination squares glow with soft emerald dots; captures display coral rings.</td>
+          <td>Child plays without illegal moves or confusion.</td>
+        </tr>
+        <tr>
+          <td><b>Hint Button (💡)</b></td>
+          <td>Calculates best move and draws an animated light blue guide arrow.</td>
+          <td>Never gets stuck when unsure what to move.</td>
+        </tr>
+        <tr>
+          <td><b>Undo Button (↩️)</b></td>
+          <td>Rolls back opponent's and player's move in 1 click.</td>
+          <td>Encourages exploration without fear of mistakes.</td>
+        </tr>
+        <tr>
+          <td><b>Check Indicator (⚠️)</b></td>
+          <td>The threatened king's square pulses with a gentle reddish alert halo.</td>
+          <td>Instantly alerts child when the king needs help.</td>
+        </tr>
+        <tr>
+          <td><b>Victory Fanfare</b></td>
+          <td>Confetti rain, celebratory fanfare sound, and golden champion trophy 🏆.</td>
+          <td>Positive reinforcement that rewards effort and attention.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4: Empirical Test Verification -->
+  <div class="main-card">
+    <h2><span>🧪</span> Empirical Testing & Verification Suite</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Test Suite</th>
+          <th>Evaluated Criteria</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Board setup, piece values, colors, starting ranks</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Pawn steps, double jumps, diagonal captures</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Knight jumping over obstacles</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Check and checkmate detection</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Undo state stack and turn consistency</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>ChessEngineTest.kt</code></td>
+          <td>Sparky kid AI legal move generation</td>
+          <td><span style="color: #2E7D32; font-weight:700;">PASSED (100%)</span></td>
+        </tr>
+        <tr>
+          <td><code>Android Emulator (AVD)</code></td>
+          <td>Live APK installation, UI hierarchy dump, tap-to-move test</td>
+          <td><span style="color: #2E7D32; font-weight:700;">VERIFIED (100%)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <!-- Black Bishop -->
+  <!-- Base shadow -->
+  <path
+      android:fillColor="#241830"
+      android:pathData="M14,42 L34,42 C35.5,42 36,40.5 35,39 L33,36 L15,36 L13,39 C12,40.5 12.5,42 14,42 Z" />
+  <!-- Base plate -->
+  <path
+      android:fillColor="#4A3B57"
+      android:strokeColor="#241830"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M13,40 C13,40 18,38.5 24,38.5 C30,38.5 35,40 35,40 C35.8,40 36.5,39 36,38 L34,35 L14,35 L12,38 C11.5,39 12.2,40 13,40 Z" />
+  <!-- Body/pedestal -->
+  <path
+      android:fillColor="#4A3B57"
+      android:strokeColor="#241830"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M16,35 C18,30 20,26 20,24 C19,23.5 18,23 18,22 C18,21 20.5,20.5 24,20.5 C27.5,20.5 30,21 30,22 C30,23 29,23.5 28,24 C28,26 30,30 32,35 Z" />
+  <!-- Miter head -->
+  <path
+      android:fillColor="#4A3B57"
+      android:strokeColor="#241830"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M19,21 C18,17 20,11 24,8 C28,11 30,17 29,21 C27.5,21.8 20.5,21.8 19,21 Z" />
+  <!-- Small top sphere -->
+  <path
+      android:fillColor="#FFD54F"
+      android:strokeColor="#241830"
+      android:strokeWidth="1.6"
+      android:pathData="M24,8 C25.38,8 26.5,6.88 26.5,5.5 C26.5,4.12 25.38,3 24,3 C22.62,3 21.5,4.12 21.5,5.5 C21.5,6.88 22.62,8 24,8 Z" />
+  <!-- Diagonal slit in miter (bright on black piece) -->
+  <path
+      android:strokeColor="#FFF6E6"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:pathData="M21,12 L27,18" />
+</vector>

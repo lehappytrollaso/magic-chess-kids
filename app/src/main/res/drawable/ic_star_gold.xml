@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+  <!-- Glowing Golden Star -->
+  <path
+      android:fillColor="#FFD54F"
+      android:strokeColor="#FFA000"
+      android:strokeWidth="1.2"
+      android:pathData="M18,3 L22.5,12.5 L33,14 L25.5,21.5 L27.5,32 L18,27 L8.5,32 L10.5,21.5 L3,14 L13.5,12.5 Z" />
+  <path
+      android:fillColor="#FFF9C4"
+      android:pathData="M18,7 L20.5,13 L27,14 L22,19 L23.5,25.5 L18,22.5 Z" />
+</vector>
